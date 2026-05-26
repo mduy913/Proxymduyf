@@ -236,12 +236,21 @@
     <div class="box roll-box" style="text-align:center">
         <h4 style="color:var(--gold); margin-bottom: 15px;">VÒNG QUAY MAY MẮN</h4>
         
-        <div class="wheel-container">
-            <svg class="wheel-pointer" viewBox="0 0 30 40">
-                <path d="M15 40 L30 0 L0 0 Z" fill="#ff4444"></path>
-            </svg>
-            <canvas id="wheel-canvas" width="500" height="500"></canvas>
-        </div>
+     <div class="wheel-container">
+
+    <div class="wheel-glow"></div>
+
+    <svg class="wheel-pointer" viewBox="0 0 30 40">
+        <path d="M15 40 L30 0 L0 0 Z" fill="#ff4444"></path>
+    </svg>
+
+    <canvas id="wheel-canvas"
+        width="500"
+        height="500">
+    </canvas>
+
+    <div class="wheel-center">
+    </div>
 
         <p style="font-size:12px; margin-bottom: 15px; opacity: 0.8;">Chi phí: <b id="view-p-roll">0</b>đ / lượt quay</p>
         <div class="grid">
