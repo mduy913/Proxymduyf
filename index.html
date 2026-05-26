@@ -132,16 +132,78 @@
             border: 5px solid var(--glass-border);
             box-shadow: 0 0 20px rgba(0, 210, 255, 0.4);
         }
-        .wheel-pointer {
-            position: absolute;
-            top: -10px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 30px;
-            height: 40px;
-            z-index: 10;
-            filter: drop-shadow(0 0 5px rgba(0,0,0,0.5));
-        }
+     .wheel-pointer{
+    position: absolute;
+    top: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 35px;
+    z-index: 10;
+    filter: drop-shadow(0 0 10px red);
+}
+
+@keyframes glowMove{
+    from{
+        transform: scale(1);
+        opacity: .7;
+    }
+    to{
+        transform: scale(1.08);
+        opacity: 1;
+    }
+        .wheel-container{
+    position: relative;
+    width: 320px;
+    height: 320px;
+    margin: auto;
+    padding: 10px;
+    border-radius: 35px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    backdrop-filter: blur(10px);
+    overflow: hidden;
+    box-shadow:
+        0 0 30px rgba(0,210,255,.25),
+        inset 0 0 20px rgba(255,255,255,.05);
+}
+
+#wheel-canvas{
+    width: 100%;
+    height: 100%;
+    border-radius: 25px;
+    background: rgba(255,255,255,0.03);
+}
+
+.wheel-glow{
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(circle,
+        rgba(0,210,255,.25),
+        transparent 70%);
+    animation: glowMove 3s infinite alternate;
+}
+
+.wheel-center{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: linear-gradient(135deg,#00d2ff,#3a7bd5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-size: 16px;
+    color: white;
+    box-shadow:
+        0 0 20px rgba(0,210,255,.7);
+    z-index: 5;
+}
+
     </style>
 </head>
 <body>
@@ -240,6 +302,10 @@
 
     <div class="wheel-glow"></div>
 
+<div class="wheel-container">
+
+    <div class="wheel-glow"></div>
+
     <svg class="wheel-pointer" viewBox="0 0 30 40">
         <path d="M15 40 L30 0 L0 0 Z" fill="#ff4444"></path>
     </svg>
@@ -250,7 +316,10 @@
     </canvas>
 
     <div class="wheel-center">
+        SPIN
     </div>
+
+</div>
 
         <p style="font-size:12px; margin-bottom: 15px; opacity: 0.8;">Chi phí: <b id="view-p-roll">0</b>đ / lượt quay</p>
         <div class="grid">
