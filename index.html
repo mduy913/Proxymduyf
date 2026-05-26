@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0">
-    <title>SHOP mduyk</title>
+    <title>SHOP CAO MINH DUY V80 - PREMIUM Edition</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -132,77 +132,16 @@
             border: 5px solid var(--glass-border);
             box-shadow: 0 0 20px rgba(0, 210, 255, 0.4);
         }
-     .wheel-pointer{
-    position: absolute;
-    top: -5px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 35px;
-    z-index: 10;
-    filter: drop-shadow(0 0 10px red);
-}
-
-@keyframes glowMove{
-    from{
-        transform: scale(1);
-        opacity: .7;
-    }
-    to{
-        transform: scale(1.08);
-        opacity: 1;
-    }
-        .wheel-container{
-    position: relative;
-    width: 320px;
-    height: 320px;
-    margin: auto;
-    padding: 10px;
-    border-radius: 35px;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.08);
-    backdrop-filter: blur(10px);
-    overflow: hidden;
-    box-shadow:
-        0 0 30px rgba(0,210,255,.25),
-        inset 0 0 20px rgba(255,255,255,.05);
-}
-
-#wheel-canvas{
-    width: 100%;
-    height: 100%;
-    border-radius: 25px;
-    background: rgba(255,255,255,0.03);
-}
-
-.wheel-glow{
-    position: absolute;
-    inset: 0;
-    background:
-        radial-gradient(circle,
-        rgba(0,210,255,.25),
-        transparent 70%);
-    animation: glowMove 3s infinite alternate;
-}
-
-.wheel-center{
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%,-50%);
-    width: 70px;
-    height: 70px;
-    border-radius: 50%;
-    background: linear-gradient(135deg,#00d2ff,#3a7bd5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 900;
-    font-size: 16px;
-    color: white;
-    box-shadow:
-        0 0 20px rgba(0,210,255,.7);
-    z-index: 5;
-}
+        .wheel-pointer {
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 40px;
+            z-index: 10;
+            filter: drop-shadow(0 0 5px rgba(0,0,0,0.5));
+        }
     </style>
 </head>
 <body>
@@ -297,28 +236,12 @@
     <div class="box roll-box" style="text-align:center">
         <h4 style="color:var(--gold); margin-bottom: 15px;">VÒNG QUAY MAY MẮN</h4>
         
-     <div class="wheel-container">
-
-    <div class="wheel-glow"></div>
-
-<div class="wheel-container">
-
-    <div class="wheel-glow"></div>
-
-    <svg class="wheel-pointer" viewBox="0 0 30 40">
-        <path d="M15 40 L30 0 L0 0 Z" fill="#ff4444"></path>
-    </svg>
-
-    <canvas id="wheel-canvas"
-        width="500"
-        height="500">
-    </canvas>
-
-    <div class="wheel-center">
-        SPIN
-    </div>
-
-</div>
+        <div class="wheel-container">
+            <svg class="wheel-pointer" viewBox="0 0 30 40">
+                <path d="M15 40 L30 0 L0 0 Z" fill="#ff4444"></path>
+            </svg>
+            <canvas id="wheel-canvas" width="500" height="500"></canvas>
+        </div>
 
         <p style="font-size:12px; margin-bottom: 15px; opacity: 0.8;">Chi phí: <b id="view-p-roll">0</b>đ / lượt quay</p>
         <div class="grid">
@@ -332,7 +255,7 @@
     <div class="box">
         <h4 style="color:var(--accent-blue); text-align:center; margin-bottom: 15px;">DANH SÁCH KEY CÓ SẴN</h4>
         <div class="grid">
-            <button class="btn-main" onclick="buy('ngay')"> acc clon (<span id="s-ngay">0</span>) <span class="price-tag" id="pr-ngay">0đ</span></button>
+            <button class="btn-main" onclick="buy('ngay')">NGÀY (<span id="s-ngay">0</span>) <span class="price-tag" id="pr-ngay">0đ</span></button>
             <button class="btn-main" onclick="buy('tuan')">TUẦN (<span id="s-tuan">0</span>) <span class="price-tag" id="pr-tuan">0đ</span></button>
             <button class="btn-main" onclick="buy('thang')">THÁNG (<span id="s-thang">0</span>) <span class="price-tag" id="pr-thang">0đ</span></button>
             <button class="btn-main" onclick="buy('nam')">NĂM (<span id="s-nam">0</span>) <span class="price-tag" id="pr-nam">0đ</span></button>
