@@ -1,8 +1,22 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0">
+(function() {
+    if (localStorage.getItem('shop_status') === 'closed') {
+        document.documentElement.innerHTML = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Shop Tạm Đóng Cửa</title>
+                <style>
+                    body { text-align: center; padding: 100px 20px; font-family: -apple-system, sans-serif; background: #121212; color: #fff; }
+                    h1 { color: #ff3b30; font-size: 32px; }
+                    p { font-size: 16px; color: #aaa; }
+                </style>
+            </head>
+            <body>
+                <h1>⚠️ HỆ THỐNG ĐANG BẢO TRÌ</h1>
+                <p>Shop hiện tại đang tạm đóng cửa để nâng cấp hệ thống.</p>
+                <p>Vui lòng quay lại sau ít phút. Xin cảm ơn!</p>
     <title>SHOP CAO MINH DUY V80 - PREMIUM Edition</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
@@ -211,7 +225,8 @@
     }
 
     document.addEventListener('DOMContentLoaded', updateShopButtonUI);
-</div>
+</script>
+        
 
     <div class="box">
         <div style="display:flex; justify-content: space-between; align-items: center;">
