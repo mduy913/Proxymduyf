@@ -148,57 +148,70 @@
 
 <div id="auth-ui" style="max-width:400px;margin:10vh auto;padding:10px">
     <div class="box" style="text-align: center;">
-        <h3 style="color:var(--accent-blue)">HỆ THỐNG SHOP V80</h3>
-        <p style="font-size: 12px; opacity: 0.6; margin-bottom: 20px;">Premium Mobile Management</p>
-        <input type="text" id="au" placeholder="Tên tài khoản...">
-        <input type="password" id="ap" placeholder="Mật khẩu bảo mật...">
-        <div class="grid" style="margin-top:10px">
-            <button class="btn-main" onclick="auth('login')">ĐĂNG NHẬP</button>
-            <button style="background:rgba(255,255,255,0.1);color:#fff" onclick="auth('reg')">ĐĂNG KÝ</button>
-        </div>
-    </div>
+        <h4 style="color:#ff4444;text-align:center">⚙ QUẢN TRỊ VIÊN</h4>
+<div class="grid" style="grid-template-columns:repeat(4,1fr)">
+    <input type="number" id="adm-p-ngay" placeholder="Giá N">
+    <input type="number" id="adm-p-tuan" placeholder="Giá T">
+    <input type="number" id="adm-p-thang" placeholder="Giá Th">
+    <input type="number" id="adm-p-nam" placeholder="Giá Năm">
+</div>
+<div class="grid" style="grid-template-columns:repeat(4,1fr)">
+    <input type="number" id="adm-v-ngay" placeholder="Vip N">
+    <input type="number" id="adm-v-tuan" placeholder="Vip T">
+    <input type="number" id="adm-v-thang" placeholder="Vip Th">
+    <input type="number" id="adm-v-nam" placeholder="Vip Năm">
+</div>
+<div class="grid">
+    <input type="number" id="adm-p-roll" placeholder="Giá Quay">
+    <input type="number" id="adm-v-roll" placeholder="Quay VIP">
+    <input type="number" id="adm-rate" placeholder="% Trúng">
+</div>
+<button class="btn-main" onclick="saveSettings()">LƯU CẤU HÌNH HỆ THỐNG</button>
+
+<button id="btn-toggle-shop" class="btn-main" onclick="toggleShopStatus()" style="margin-top:10px; background-color:#34c759;">TRẠNG THÁI: SHOP ĐANG MỞ</button>
+
+<textarea id="add-k" placeholder="Dán danh sách key vào đây (mỗi dòng 1 key)..." style="margin-top:10px;height:70px"></textarea>
+<div class="grid" style="grid-template-columns:repeat(4,1fr)">
+    <button class="btn-main" onclick="upK('ngay')">+N</button>
+    <button class="btn-main" onclick="upK('tuan')">+T</button>
+    <button class="btn-main" onclick="upK('thang')">+Th</button>
+    <button class="btn-main" onclick="upK('nam')">+Nam</button>
 </div>
 
-<div id="shop-ui" style="display:none;max-width:500px;margin:auto;padding:10px">
-    
-    <div id="adm-box" class="adm-sec box">
-        <h4 style="color:#ff4444;text-align:center">⚙ QUẢN TRỊ VIÊN</h4>
-        <div class="grid" style="grid-template-columns:repeat(4,1fr)">
-            <input type="number" id="adm-p-ngay" placeholder="Giá N">
-            <input type="number" id="adm-p-tuan" placeholder="Giá T">
-            <input type="number" id="adm-p-thang" placeholder="Giá Th">
-            <input type="number" id="adm-p-nam" placeholder="Giá Năm">
-        </div>
-        <div class="grid" style="grid-template-columns:repeat(4,1fr)">
-            <input type="number" id="adm-v-ngay" placeholder="Vip N">
-            <input type="number" id="adm-v-tuan" placeholder="Vip T">
-            <input type="number" id="adm-v-thang" placeholder="Vip Th">
-            <input type="number" id="adm-v-nam" placeholder="Vip Năm">
-        </div>
-        <div class="grid">
-            <input type="number" id="adm-p-roll" placeholder="Giá Quay">
-            <input type="number" id="adm-v-roll" placeholder="Quay VIP">
-            <input type="number" id="adm-rate" placeholder="% Trúng">
-        </div>
-        <button class="btn-main" onclick="saveSettings()">LƯU CẤU HÌNH HỆ THỐNG</button>
-        
-        <textarea id="add-k" placeholder="Dán danh sách key vào đây (mỗi dòng 1 key)..." style="margin-top:10px;height:70px"></textarea>
-        <div class="grid" style="grid-template-columns:repeat(4,1fr)">
-            <button class="btn-main" onclick="upK('ngay')">+N</button>
-            <button class="btn-main" onclick="upK('tuan')">+T</button>
-            <button class="btn-main" onclick="upK('thang')">+Th</button>
-            <button class="btn-main" onclick="upK('nam')">+Nam</button>
-        </div>
+<h5 style="margin-top:15px; color: var(--gold)">DUYỆT NẠP:</h5>
+<div id="adm-pay-list" class="scroll-list"></div>
 
-        <h5 style="margin-top:15px; color: var(--gold)">DUYỆT NẠP:</h5>
-        <div id="adm-pay-list" class="scroll-list"></div>
+<h5 style="color:var(--accent-blue)">DUYỆT RESET KEY:</h5>
+<div id="adm-rs-list" class="scroll-list"></div>
 
-        <h5 style="color:var(--accent-blue)">DUYỆT RESET KEY:</h5>
-        <div id="adm-rs-list" class="scroll-list"></div>
+<h5 style="color:#fff">NGƯỜI DÙNG:</h5>
+<div class="scroll-list"><table id="adm-user-list"></table></div>
 
-        <h5 style="color:#fff">NGƯỜI DÙNG:</h5>
-        <div class="scroll-list"><table id="adm-user-list"></table></div>
-    </div>
+<script>
+    function updateShopButtonUI() {
+        const btn = document.getElementById('btn-toggle-shop');
+        const status = localStorage.getItem('shop_status');
+        if (status === 'closed') {
+            btn.innerText = "TRẠNG THÁI: SHOP ĐANG ĐÓNG";
+            btn.style.backgroundColor = "#ff3b30";
+        } else {
+            btn.innerText = "TRẠNG THÁI: SHOP ĐANG MỞ";
+            btn.style.backgroundColor = "#34c759";
+        }
+    }
+
+    function toggleShopStatus() {
+        const currentStatus = localStorage.getItem('shop_status');
+        if (currentStatus === 'closed') {
+            localStorage.setItem('shop_status', 'open');
+        } else {
+            localStorage.setItem('shop_status', 'closed');
+        }
+        updateShopButtonUI();
+    }
+
+    document.addEventListener('DOMContentLoaded', updateShopButtonUI);
+</div>
 
     <div class="box">
         <div style="display:flex; justify-content: space-between; align-items: center;">
