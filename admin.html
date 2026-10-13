@@ -1,1 +1,385 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>WebClip Creator</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #0a0a1a 0%, #1a0a2a 50%, #0a0a1a 100%); color: #fff; min-height: 100vh; padding: 14px; display: flex; flex-direction: column; align-items: center; }
+.container { max-width: 600px; width: 100%; }
+h1 { text-align: center; font-size: 22px; margin-bottom: 6px; background: linear-gradient(135deg, #a855f7, #ec4899, #f59e0b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 900; }
+.subtitle { text-align: center; font-size: 12px; color: #888; margin-bottom: 18px; }
+.card { background: rgba(255,255,255,0.03); border: 1px solid rgba(168,85,247,0.3); border-radius: 14px; padding: 14px; margin-bottom: 12px; }
+.label { font-size: 11px; font-weight: 800; color: #a855f7; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+.field { margin-bottom: 10px; }
+.field label { display: block; font-size: 10px; font-weight: 700; color: #888; margin-bottom: 4px; text-transform: uppercase; }
+.field input, .field textarea { width: 100%; background: rgba(0,0,0,0.4); border: 1px solid rgba(168,85,247,0.3); border-radius: 9px; color: #fff; padding: 10px 12px; font-size: 13px; font-family: inherit; outline: none; }
+.field textarea { resize: vertical; min-height: 100px; font-family: 'Courier New', monospace; font-size: 12px; }
+.field input:focus, .field textarea:focus { border-color: #a855f7; box-shadow: 0 0 15px rgba(168,85,247,0.3); }
+.count-row { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 6px; }
+.count-btn { padding: 10px; background: rgba(0,0,0,0.3); border: 2px solid rgba(168,85,247,0.3); border-radius: 9px; color: #ccc; font-weight: 800; font-size: 13px; cursor: pointer; text-align: center; }
+.count-btn.active { background: linear-gradient(135deg, #a855f7, #ec4899); border-color: transparent; color: #fff; }
+.slider-count { width: 100%; margin-top: 10px; height: 6px; -webkit-appearance: none; background: rgba(168,85,247,0.2); border-radius: 3px; outline: none; }
+.slider-count::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; background: linear-gradient(135deg, #a855f7, #ec4899); border-radius: 50%; border: 2px solid #fff; }
+button.main-btn { width: 100%; padding: 16px; background: linear-gradient(135deg, #a855f7, #ec4899); border: none; border-radius: 12px; color: #fff; font-weight: 800; font-size: 14px; cursor: pointer; margin-top: 8px; letter-spacing: 1px; }
+button.main-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+button.firebase-btn { background: linear-gradient(135deg, #f59e0b, #ef4444); }
+.preset-row { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 8px; scrollbar-width: none; }
+.preset-row::-webkit-scrollbar { display: none; }
+.preset-btn { flex-shrink: 0; padding: 6px 12px; background: rgba(168,85,247,0.15); border: 1px solid rgba(168,85,247,0.3); border-radius: 16px; color: #c4b5fd; font-size: 11px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+.status { font-size: 12px; text-align: center; padding: 12px; background: rgba(0,0,0,0.3); border-radius: 10px; margin-top: 12px; color: #22c55e; min-height: 40px; line-height: 1.5; word-break: break-all; }
+.status.error { color: #ef4444; }
+.status.loading { color: #f59e0b; }
+.link-box { background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.4); border-radius: 10px; padding: 12px; margin-top: 12px; font-size: 12px; color: #86efac; word-break: break-all; display: none; }
+.link-box.show { display: block; }
+.link-box a { color: #22c55e; font-weight: 700; text-decoration: underline; }
+.estimate-box { background: rgba(139,92,246,0.1); border: 1px solid rgba(139,92,246,0.4); border-radius: 10px; padding: 10px; font-size: 11px; color: #c4b5fd; margin-top: 8px; }
+.estimate-box b { color: #a855f7; }
+.switch-row { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 9px; margin-top: 8px; cursor: pointer; }
+.switch-label { font-size: 12px; color: #ddd; }
+.switch { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider { position: absolute; inset: 0; background: rgba(255,255,255,0.1); border-radius: 34px; cursor: pointer; transition: .3s; }
+.slider:before { content: ""; position: absolute; width: 18px; height: 18px; left: 3px; bottom: 3px; background: #888; border-radius: 50%; transition: .3s; }
+input:checked + .slider { background: rgba(239,68,68,0.3); }
+input:checked + .slider:before { transform: translateX(20px); background: #ef4444; }
+.tabs { display: flex; background: rgba(0,0,0,0.3); border-radius: 10px; padding: 4px; margin-bottom: 12px; }
+.tab { flex: 1; padding: 10px; background: transparent; border: none; border-radius: 8px; color: #999; font-weight: 700; font-size: 12px; cursor: pointer; }
+.tab.active { background: linear-gradient(135deg, #a855f7, #ec4899); color: #fff; }
+.preview-frame { width: 100%; height: 200px; border-radius: 10px; border: 1px solid rgba(168,85,247,0.3); background: #fff; overflow: hidden; margin-top: 8px; }
+.preview-frame iframe { width: 100%; height: 100%; border: none; }
+.icon-preview-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); gap: 10px; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 10px; margin-top: 8px; max-height: 400px; overflow-y: auto; }
+.icon-item { text-align: center; font-size: 9px; color: #ddd; }
+.icon-item .icon-box { width: 50px; height: 50px; margin: 0 auto 4px; border-radius: 12px; background: linear-gradient(135deg, #a855f7, #ec4899); display: flex; align-items: center; justify-content: center; font-size: 24px; overflow: hidden; }
+.icon-item .icon-box img { width: 100%; height: 100%; object-fit: cover; }
+.notice-box { background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.4); border-radius: 10px; padding: 10px; font-size: 11px; color: #fbbf24; line-height: 1.6; margin-top: 8px; }
+</style>
+</head>
+<body>
 
+<div class="container">
+    <h1>WEBCLIP CREATOR</h1>
+    <div class="subtitle">Tạo config → Upload Firebase → Lấy link tải</div>
+
+    <div class="card">
+        <div class="label">SỐ WEBCLIP <small id="count-display" style="color:#888;float:right;font-weight:600">2 icon</small></div>
+        <div class="count-row">
+            <button class="count-btn" data-count="1">1</button>
+            <button class="count-btn active" data-count="2">2</button>
+            <button class="count-btn" data-count="10">10</button>
+            <button class="count-btn" data-count="100">100</button>
+        </div>
+        <div class="count-row" style="margin-top:6px">
+            <button class="count-btn" data-count="1000">1K</button>
+            <button class="count-btn" data-count="10000">10K</button>
+            <button class="count-btn" data-count="100000">100K</button>
+            <button class="count-btn" data-count="900000">900K</button>
+        </div>
+        <input type="range" id="count-slider" class="slider-count" min="1" max="900000" value="2">
+        <div class="estimate-box" id="estimate-box">Ước tính: <b>~1 KB</b></div>
+    </div>
+
+    <div class="card">
+        <div class="label">NỘI DUNG WEBCLIP</div>
+        <div class="field">
+            <label>Tên app</label>
+            <input type="text" id="app-name" value="Thông tin" maxlength="20">
+        </div>
+        <div class="field">
+            <label>Nội dung (HTML)</label>
+            <div class="preset-row">
+                <button class="preset-btn" data-preset="text">Text</button>
+                <button class="preset-btn" data-preset="info">Card</button>
+                <button class="preset-btn" data-preset="contact">Liên hệ</button>
+                <button class="preset-btn" data-preset="warning">Cảnh báo</button>
+                <button class="preset-btn" data-preset="empty">Xoá</button>
+            </div>
+            <textarea id="app-content">Xin chào!
+Đây là nội dung WebClip của bạn.</textarea>
+        </div>
+        <div class="field">
+            <label>URL icon (https)</label>
+            <input type="text" id="icon-url" placeholder="https://i.imgur.com/xxxxx.png">
+        </div>
+        <div class="notice-box">
+            <b>Lưu ý:</b> iOS không chấp nhận icon dạng data URL. Phải là link https.
+        </div>
+    </div>
+
+    <div class="tabs">
+        <button class="tab active" data-tab="preview">XEM TRƯỚC</button>
+        <button class="tab" data-tab="icons">ICON</button>
+    </div>
+
+    <div id="tab-preview" class="card">
+        <div class="label">XEM TRƯỚC NỘI DUNG</div>
+        <div class="preview-frame"><iframe id="preview-frame" sandbox="allow-same-origin"></iframe></div>
+    </div>
+
+    <div id="tab-icons" class="card" style="display:none">
+        <div class="label">ICON NGOÀI HOME SCREEN</div>
+        <div class="icon-preview-grid" id="icon-preview"></div>
+    </div>
+
+    <div class="card">
+        <div class="label">PROFILE</div>
+        <div class="field">
+            <label>Mô tả profile</label>
+            <input type="text" id="profile-desc" value="WebClip tạo bởi MDUY">
+        </div>
+        <div class="field">
+            <label>Identifier</label>
+            <input type="text" id="profile-id" value="com.mduy.webclip">
+        </div>
+        <label class="switch-row">
+            <span class="switch-label">Không cho xoá config</span>
+            <label class="switch"><input type="checkbox" id="noremove" checked><span class="slider"></span></label>
+        </label>
+    </div>
+
+    <button class="main-btn firebase-btn" id="create-btn">🔥 TẠO CONFIG + UPLOAD FIREBASE</button>
+
+    <div class="status" id="status">Sẵn sàng</div>
+
+    <div class="link-box" id="link-box">
+        <div style="font-weight:800;margin-bottom:6px">✅ LINK TẢI ĐÃ TẠO:</div>
+        <a id="link-display" href="#" target="_blank"></a>
+        <div style="margin-top:8px;font-size:10px;opacity:0.7">Đã copy. Gửi cho người khác để cài!</div>
+    </div>
+</div>
+
+<script>
+(function() {
+    'use strict';
+
+    var FIREBASE = 'https://shopmduy-default-rtdb.asia-southeast1.firebasedatabase.app/configs/';
+    var DOWNLOAD_URL = 'https://proxymduyf.github.io/download.html?id=';
+
+    var $ = function(id) { return document.getElementById(id); };
+    var currentCount = 2;
+
+    var PRESETS = {
+        text: 'Xin chào!\nĐây là nội dung WebClip của bạn.',
+        info: '<div style="padding:20px;font-family:sans-serif"><h1 style="color:#a855f7">Thông tin</h1><p><b>Tên:</b> Nguyễn Văn A</p><p><b>SĐT:</b> 0328033706</p></div>',
+        contact: '<div style="padding:20px;font-family:sans-serif;text-align:center"><h1 style="color:#22c55e">Liên hệ</h1><p>Zalo: <b>0328033706</b></p><p>Telegram: <b>@mduyk</b></p></div>',
+        warning: '<div style="padding:20px;font-family:sans-serif;background:#fee;border:2px solid #f00;border-radius:10px"><h1 style="color:#f00">CẢNH BÁO</h1><p>Nội dung cảnh báo quan trọng!</p></div>',
+        empty: ''
+    };
+
+    document.querySelectorAll('.preset-btn').forEach(function(btn) {
+        btn.onclick = function() {
+            $('app-content').value = PRESETS[btn.getAttribute('data-preset')] || '';
+            updatePreview();
+        };
+    });
+
+    document.querySelectorAll('.count-btn').forEach(function(btn) {
+        btn.onclick = function() {
+            currentCount = parseInt(btn.getAttribute('data-count'));
+            document.querySelectorAll('.count-btn').forEach(function(b) { b.classList.remove('active'); });
+            btn.classList.add('active');
+            $('count-slider').value = Math.min(currentCount, 900000);
+            updateCountInfo();
+        };
+    });
+
+    $('count-slider').addEventListener('input', function() {
+        currentCount = parseInt(this.value);
+        document.querySelectorAll('.count-btn').forEach(function(b) { b.classList.remove('active'); });
+        updateCountInfo();
+    });
+
+    function updateCountInfo() {
+        $('count-display').textContent = formatNumber(currentCount) + ' icon';
+        var kb = Math.round(currentCount * 0.5);
+        var sizeText = kb < 1024 ? kb + ' KB' : (kb / 1024).toFixed(1) + ' MB';
+        var warn = kb > 10 * 1024 ? ' <span style="color:#ef4444">⚠ >10MB</span>' : '';
+        $('estimate-box').innerHTML = 'Ước tính: <b>' + sizeText + '</b>' + warn;
+        if (currentCount <= 200) updateIconPreview();
+    }
+
+    function formatNumber(n) {
+        return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    }
+
+    document.querySelectorAll('.tab').forEach(function(tab) {
+        tab.onclick = function() {
+            document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+            tab.classList.add('active');
+            var name = tab.getAttribute('data-tab');
+            $('tab-preview').style.display = name === 'preview' ? 'block' : 'none';
+            $('tab-icons').style.display = name === 'icons' ? 'block' : 'none';
+            if (name === 'icons' && currentCount <= 200) updateIconPreview();
+        };
+    });
+
+    function buildHtml() {
+        var content = $('app-content').value;
+        var name = $('app-name').value || 'WebClip';
+        var bodyContent = /<[a-z][\s\S]*>/i.test(content) 
+            ? content 
+            : '<pre style="white-space:pre-wrap;word-break:break-word">' + content.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</pre>';
+        return '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' + name + '</title><style>*{box-sizing:border-box}body{font-family:-apple-system,sans-serif;background:#fff;color:#333;padding:20px;margin:0}</style></head><body>' + bodyContent + '</body></html>';
+    }
+
+    function updatePreview() {
+        $('preview-frame').srcdoc = buildHtml();
+    }
+
+    function updateIconPreview() {
+        var grid = $('icon-preview');
+        grid.innerHTML = '';
+        var name = $('app-name').value.trim() || 'App';
+        var iconUrl = $('icon-url').value.trim();
+        var limit = Math.min(currentCount, 200);
+
+        for (var i = 0; i < limit; i++) {
+            var dn = currentCount > 1 ? name + ' ' + (i + 1) : name;
+            var box = (iconUrl && iconUrl.indexOf('http') === 0)
+                ? '<img src="' + iconUrl.replace(/"/g, '&quot;') + '" onerror="this.style.display=\'none\';this.parentNode.innerHTML=\'🌐\'">'
+                : '🌐';
+            grid.innerHTML += '<div class="icon-item"><div class="icon-box">' + box + '</div><div>' + dn.replace(/</g, '&lt;') + '</div></div>';
+        }
+        if (currentCount > limit) {
+            grid.innerHTML += '<div style="grid-column:1/-1;text-align:center;padding:10px;color:#888;font-size:11px">...và ' + formatNumber(currentCount - limit) + ' icon nữa</div>';
+        }
+    }
+
+    ['app-content', 'app-name', 'icon-url'].forEach(function(id) {
+        $(id).addEventListener('input', function() {
+            updatePreview();
+            if (currentCount <= 200) updateIconPreview();
+        });
+    });
+
+    function generateUUID() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            var r = Math.random() * 16 | 0;
+            return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16).toUpperCase();
+        });
+    }
+
+    function escapeXml(s) {
+        return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+    }
+
+    $('create-btn').onclick = function() {
+        var btn = $('create-btn');
+        btn.disabled = true;
+        btn.textContent = '⏳ ĐANG TẠO...';
+        setStatus('Đang tạo config...', 'loading');
+
+        setTimeout(function() {
+            try {
+                var appName = $('app-name').value.trim() || 'WebClip';
+                var profileDesc = $('profile-desc').value.trim() || 'WebClip';
+                var profileId = $('profile-id').value.trim() || 'com.mduy.webclip';
+                var iconUrl = $('icon-url').value.trim();
+                var noRemove = $('noremove').checked;
+
+                if (iconUrl && iconUrl.indexOf('http') !== 0) {
+                    setStatus('❌ URL icon phải bắt đầu bằng http/https', 'error');
+                    resetBtn();
+                    return;
+                }
+
+                var html = buildHtml();
+                var base64Html = btoa(unescape(encodeURIComponent(html)));
+                var dataUri = 'data:text/html;charset=utf-8;base64,' + base64Html;
+
+                var payloads = [];
+                var noRemoveStr = noRemove ? 'true' : 'false';
+
+                for (var i = 0; i < currentCount; i++) {
+                    var dn = currentCount > 1 ? appName + ' ' + (i + 1) : appName;
+                    var uuid = generateUUID();
+                    var iconXml = (iconUrl && iconUrl.indexOf('http') === 0) 
+                        ? '            <key>Icon</key>\n            <string>' + escapeXml(iconUrl) + '</string>\n' 
+                        : '';
+                    payloads.push([
+                        '        <dict>',
+                        '            <key>FullScreen</key><true/>',
+                        '            <key>IgnoreManifestScope</key><false/>',
+                        '            <key>IsRemovable</key><true/>',
+                        '            <key>Label</key><string>' + escapeXml(dn) + '</string>',
+                        '            <key>Precomposed</key><true/>',
+                        '            <key>PayloadDescription</key><string>' + escapeXml(dn) + '</string>',
+                        '            <key>PayloadDisplayName</key><string>' + escapeXml(dn) + '</string>',
+                        '            <key>PayloadIdentifier</key><string>' + escapeXml(profileId) + '.webclip.' + i + '</string>',
+                        '            <key>PayloadOrganization</key><string>MDUY</string>',
+                        '            <key>PayloadType</key><string>com.apple.webClip.managed</string>',
+                        '            <key>PayloadUUID</key><string>' + uuid + '</string>',
+                        '            <key>PayloadVersion</key><integer>1</integer>',
+                        '            <key>URL</key><string>' + escapeXml(dataUri) + '</string>',
+                        iconXml + '        </dict>'
+                    ].join('\n'));
+                }
+
+                var config = '<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n<plist version="1.0">\n<dict>\n    <key>PayloadContent</key>\n    <array>\n' + payloads.join('\n') + '\n    </array>\n    <key>PayloadDescription</key><string>' + escapeXml(profileDesc) + '</string>\n    <key>PayloadDisplayName</key><string>' + escapeXml(profileDesc) + '</string>\n    <key>PayloadIdentifier</key><string>' + escapeXml(profileId) + '</string>\n    <key>PayloadOrganization</key><string>MDUY</string>\n    <key>PayloadRemovalDisallowed</key><' + noRemoveStr + '/>\n    <key>PayloadType</key><string>Configuration</string>\n    <key>PayloadUUID</key><string>' + generateUUID() + '</string>\n    <key>PayloadVersion</key><integer>1</integer>\n</dict>\n</plist>';
+
+                var configId = 'cfg_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8);
+                var firebaseUrl = FIREBASE + configId + '.json';
+
+                var data = {
+                    name: appName.replace(/\s+/g, '-').toLowerCase() + '-' + currentCount + 'icons.mobileconfig',
+                    content: config,
+                    count: currentCount,
+                    created: Date.now()
+                };
+
+                setStatus('🔥 Đang upload lên Firebase...', 'loading');
+
+                fetch(firebaseUrl, {
+                    method: 'PUT',
+                    body: JSON.stringify(data),
+                    headers: { 'Content-Type': 'application/json' }
+                }).then(function(r) {
+                    if (r.status < 200 || r.status >= 300) {
+                        setStatus('❌ Firebase HTTP ' + r.status + '. Kiểm tra Rules!', 'error');
+                        resetBtn();
+                        return;
+                    }
+                    var link = DOWNLOAD_URL + configId;
+                    try {
+                        if (navigator.clipboard && navigator.clipboard.writeText) {
+                            navigator.clipboard.writeText(link).catch(function() {});
+                        }
+                    } catch(e) {}
+                    $('link-display').textContent = link;
+                    $('link-display').href = link;
+                    $('link-box').classList.add('show');
+                    setStatus('✅ Đã tạo! Link đã copy vào clipboard', 'success');
+                    resetBtn();
+                }).catch(function(err) {
+                    setStatus('❌ ' + err.message, 'error');
+                    resetBtn();
+                });
+
+            } catch(err) {
+                setStatus('❌ ' + err.message, 'error');
+                resetBtn();
+            }
+        }, 100);
+    };
+
+    function resetBtn() {
+        var btn = $('create-btn');
+        btn.disabled = false;
+        btn.textContent = '🔥 TẠO CONFIG + UPLOAD FIREBASE';
+    }
+
+    function setStatus(text, type) {
+        var el = $('status');
+        el.textContent = text;
+        el.className = 'status' + (type ? ' ' + type : '');
+    }
+
+    updatePreview();
+    updateCountInfo();
+    updateIconPreview();
+})();
+</script>
+
+</body>
+</html>
