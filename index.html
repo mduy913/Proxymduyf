@@ -1,138 +1,387 @@
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Đang tải...</title>
-<style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { width: 100vw; height: 100vh; overflow: hidden; background: #000; }
-.btn {
-    position: fixed; inset: 0;
-    background: linear-gradient(135deg, #0a0a1a 0%, #1a0a2a 100%);
-    border: none; color: #fff;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    font-size: 32px; font-weight: 900; letter-spacing: 2px;
-    cursor: pointer;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    gap: 20px;
-    animation: pulse 2s ease-in-out infinite;
-    transition: all 0.3s;
-}
-.btn:active { transform: scale(0.98); }
-.btn .icon { font-size: 80px; animation: bounce 1.5s ease-in-out infinite; }
-.btn .text { background: linear-gradient(135deg, #a855f7, #ec4899, #f59e0b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-.btn .sub { font-size: 14px; color: #888; font-weight: 500; margin-top: 10px; padding: 0 20px; text-align: center; }
-.btn.error { animation: none; }
-.btn.error .text { background: none; -webkit-text-fill-color: #ef4444; color: #ef4444; }
-.btn.success { animation: successGlow 2s ease-in-out infinite; }
-.btn.success .icon { animation: none; }
-@keyframes pulse { 0%, 100% { box-shadow: inset 0 0 0 0 rgba(168,85,247,0); } 50% { box-shadow: inset 0 0 100px 0 rgba(168,85,247,0.3); } }
-@keyframes successGlow { 0%, 100% { box-shadow: inset 0 0 0 0 rgba(34,197,94,0); } 50% { box-shadow: inset 0 0 100px 0 rgba(34,197,94,0.3); } }
-@keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#05080d">
+  <title>MDUY | Access Panel</title>
+
+  <style>
+    :root {
+      --bg: #05080d;
+      --panel: #0a111b;
+      --cyan: #38e0f8;
+      --blue: #168cff;
+      --text: #effaff;
+      --muted: #8297aa;
+      --border: rgba(56, 224, 248, .22);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      overflow-x: hidden;
+      color: var(--text);
+      background:
+        radial-gradient(ellipse at 50% 20%,
+          rgba(22, 140, 255, .12), transparent 55%),
+        var(--bg);
+      font-family: -apple-system, BlinkMacSystemFont,
+        "Segoe UI", sans-serif;
+    }
+
+    .ambient {
+      position: fixed;
+      width: 320px;
+      height: 320px;
+      border-radius: 50%;
+      background: rgba(56, 224, 248, .07);
+      filter: blur(90px);
+      pointer-events: none;
+      animation: float 7s ease-in-out infinite alternate;
+    }
+
+    .ambient.one {
+      top: -130px;
+      left: -100px;
+    }
+
+    .ambient.two {
+      right: -120px;
+      bottom: -150px;
+      background: rgba(22, 140, 255, .1);
+      animation-delay: -3s;
+    }
+
+    .panel {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 410px;
+      padding: 30px 24px 24px;
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      background: linear-gradient(
+        150deg,
+        rgba(13, 24, 37, .97),
+        rgba(5, 10, 17, .98)
+      );
+      box-shadow:
+        0 25px 90px rgba(0, 0, 0, .45),
+        0 0 35px rgba(56, 224, 248, .055);
+      animation: appear .65s ease both;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 25px;
+    }
+
+    .brand-icon {
+      display: grid;
+      place-items: center;
+      width: 49px;
+      height: 49px;
+      border: 1px solid rgba(56, 224, 248, .5);
+      border-radius: 15px;
+      color: var(--cyan);
+      background: rgba(56, 224, 248, .07);
+      box-shadow: 0 0 24px rgba(56, 224, 248, .1);
+      font-size: 25px;
+      font-weight: 900;
+    }
+
+    .brand-name {
+      font-size: 26px;
+      font-weight: 900;
+      letter-spacing: 3px;
+    }
+
+    .brand-name span {
+      color: var(--cyan);
+    }
+
+    .subtitle {
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: 2px;
+    }
+
+    .status {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 25px;
+      color: #a7bac9;
+      font-size: 12px;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 12px var(--cyan);
+      animation: pulse 1.8s infinite;
+    }
+
+    .heading {
+      margin-bottom: 9px;
+      text-align: center;
+      font-size: 23px;
+      font-weight: 800;
+    }
+
+    .description {
+      margin-bottom: 25px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    .field-label {
+      display: block;
+      margin-bottom: 9px;
+      color: #cce7f1;
+      font-size: 12px;
+      font-weight: 750;
+      letter-spacing: 1px;
+    }
+
+    .input-wrap {
+      position: relative;
+      margin-bottom: 15px;
+    }
+
+    .key-input {
+      width: 100%;
+      height: 51px;
+      padding: 0 15px;
+      outline: none;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      background: #060c14;
+      color: var(--text);
+      font: inherit;
+      font-size: 13px;
+      transition: .2s;
+    }
+
+    .key-input::placeholder {
+      color: #607487;
+    }
+
+    .key-input:focus {
+      border-color: var(--cyan);
+      box-shadow: 0 0 0 3px rgba(56, 224, 248, .08);
+    }
+
+    .unlock-btn {
+      position: relative;
+      width: 100%;
+      height: 49px;
+      overflow: hidden;
+      border: 0;
+      border-radius: 11px;
+      color: #031017;
+      background: linear-gradient(110deg, var(--cyan), var(--blue));
+      font-size: 13px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      cursor: pointer;
+      transition: transform .2s, filter .2s, box-shadow .2s;
+      box-shadow: 0 7px 25px rgba(22, 140, 255, .15);
+    }
+
+    .unlock-btn:hover {
+      filter: brightness(1.12);
+      box-shadow: 0 7px 30px rgba(56, 224, 248, .22);
+    }
+
+    .unlock-btn:active {
+      transform: scale(.985);
+    }
+
+    .unlock-btn:disabled {
+      opacity: .65;
+      cursor: wait;
+    }
+
+    .message {
+      display: none;
+      margin-top: 14px;
+      padding: 11px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      color: var(--cyan);
+      background: rgba(56, 224, 248, .05);
+      text-align: center;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .message.show {
+      display: block;
+    }
+
+    .message.error {
+      color: #ff9292;
+      border-color: rgba(255, 100, 100, .3);
+      background: rgba(255, 80, 80, .05);
+    }
+
+    .divider {
+      height: 1px;
+      margin: 23px 0 17px;
+      background: linear-gradient(
+        90deg, transparent, var(--border), transparent
+      );
+    }
+
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      color: #607487;
+      font-size: 10px;
+      letter-spacing: .4px;
+    }
+
+    .footer strong {
+      color: #8ba8ba;
+      font-weight: 650;
+    }
+
+    @keyframes appear {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes pulse {
+      50% { opacity: .45; box-shadow: 0 0 3px var(--cyan); }
+    }
+
+    @keyframes float {
+      from { transform: translate(0, 0); }
+      to { transform: translate(35px, 25px); }
+    }
+
+    @media (max-width: 420px) {
+      .panel { padding: 26px 19px 21px; }
+      .brand-name { font-size: 23px; }
+      .heading { font-size: 21px; }
+    }
+  </style>
 </head>
+
 <body>
+  <div class="ambient one"></div>
+  <div class="ambient two"></div>
 
-<button class="btn" id="btn">
-    <div class="icon" id="icon">📥</div>
-    <div class="text" id="text">ĐANG TẢI...</div>
-    <div class="sub" id="sub">Vui lòng đợi</div>
-</button>
+  <main class="panel">
+    <header class="brand">
+      <div class="brand-icon">M</div>
+      <div>
+        <div class="brand-name">MDUY<span>.</span></div>
+        <div class="subtitle">ACCESS CONTROL PANEL</div>
+      </div>
+    </header>
 
-<script>
-(function() {
-    'use strict';
+    <div class="status">
+      <span class="status-dot"></span>
+      <span id="statusText">ACCESS PANEL READY</span>
+    </div>
 
-    var FIREBASE = 'https://shopmduy-default-rtdb.asia-southeast1.firebasedatabase.app/configs/';
+    <h1 class="heading">Welcome Back</h1>
+    <p class="description">
+      Enter your access key below to continue
+    </p>
 
-    var btn = document.getElementById('btn');
-    var iconEl = document.getElementById('icon');
-    var textEl = document.getElementById('text');
-    var subEl = document.getElementById('sub');
+    <form id="unlockForm">
+      <label class="field-label" for="accessKey">
+        ACCESS KEY
+      </label>
 
-    function getParam(n) {
-        return new URLSearchParams(location.search).get(n);
+      <div class="input-wrap">
+        <input
+          id="accessKey"
+          class="key-input"
+          type="password"
+          placeholder="Enter your key..."
+          autocomplete="off"
+          spellcheck="false"
+          required
+        >
+      </div>
+
+      <button class="unlock-btn" id="unlockBtn" type="submit">
+        UNLOCK
+      </button>
+
+      <div class="message" id="message" role="status"></div>
+    </form>
+
+    <div class="divider"></div>
+
+    <footer class="footer">
+      <span>POWERED BY <strong>MDUY</strong></span>
+      <span>SECURE ACCESS UI</span>
+    </footer>
+  </main>
+
+  <script>
+    const form = document.getElementById("unlockForm");
+    const keyInput = document.getElementById("accessKey");
+    const unlockBtn = document.getElementById("unlockBtn");
+    const message = document.getElementById("message");
+    const statusText = document.getElementById("statusText");
+
+    form.addEventListener("submit", function (event) {
+      event.preventDefault();
+
+      const key = keyInput.value.trim();
+
+      message.className = "message";
+      message.textContent = "";
+
+      if (!key) {
+        showMessage("Please enter your access key.", true);
+        keyInput.focus();
+        return;
+      }
+
+      /*
+       * Giao diện hiện tại chưa kết nối máy chủ xác thực.
+       * Không báo đăng nhập thành công khi chưa xác minh key.
+       * Hãy nối phần này với API đăng nhập hợp lệ của website.
+       */
+      statusText.textContent = "KEY ENTERED";
+      showMessage(
+        "Key đã được nhập. Cần kết nối API xác thực để đăng nhập.",
+        false
+      );
+    });
+
+    function showMessage(text, isError) {
+      message.textContent = text;
+      message.className = "message show" + (isError ? " error" : "");
     }
-
-    function setState(state, text, sub) {
-        btn.className = 'btn' + (state ? ' ' + state : '');
-        iconEl.textContent = state === 'error' ? '❌' : state === 'success' ? '✅' : '📥';
-        textEl.textContent = text;
-        if (sub !== undefined) subEl.textContent = sub;
-    }
-
-    function downloadBlob(content, filename) {
-        var base64 = btoa(unescape(encodeURIComponent(content)));
-        var dataUri = 'data:application/x-apple-aspen-config;base64,' + base64;
-
-        var isSafari = /iPhone|iPad|iPod/i.test(navigator.userAgent) 
-            && /Safari/i.test(navigator.userAgent) 
-            && !/CriOS|FxiOS|EdgiOS/i.test(navigator.userAgent);
-
-        if (isSafari) {
-            window.location.href = dataUri;
-        } else {
-            var a = document.createElement('a');
-            a.href = dataUri;
-            a.download = filename;
-            a.style.display = 'none';
-            document.body.appendChild(a);
-            a.click();
-            setTimeout(function() { document.body.removeChild(a); }, 100);
-        }
-    }
-
-    async function loadAndDownload() {
-        var configId = getParam('id');
-
-        if (!configId) {
-            setState('error', 'LỖI', 'Không có ID config trong link');
-            return;
-        }
-
-        setState('', 'ĐANG TẢI...', 'Đang lấy dữ liệu từ server');
-
-        try {
-            var res = await fetch(FIREBASE + configId + '.json');
-
-            if (!res.ok) throw new Error('HTTP ' + res.status);
-
-            var data = await res.json();
-
-            if (!data || !data.content) {
-                setState('error', 'KHÔNG TÌM THẤY', 'Link đã được sử dụng hoặc không tồn tại');
-                return;
-            }
-
-            var sizeKB = Math.round(data.content.length / 1024);
-            var count = data.count || '?';
-            setState('success', 'ĐANG TẢI XUỐNG', count + ' WebClip • ' + sizeKB + 'KB');
-
-            setTimeout(function() {
-                downloadBlob(data.content, data.name || 'webclip-config.mobileconfig');
-                
-                setTimeout(function() {
-                    fetch(FIREBASE + configId + '.json', { method: 'DELETE' })
-                        .then(function() {
-                            setState('success', 'ĐÃ TẢI XONG', 'Config đã được xoá khỏi server');
-                        })
-                        .catch(function() {
-                            setState('success', 'ĐÃ TẢI XONG', 'Vui lòng cài đặt file vừa tải');
-                        });
-                }, 1000);
-
-            }, 300);
-
-        } catch (err) {
-            setState('error', 'LỖI', err.message);
-        }
-    }
-
-    loadAndDownload();
-})();
-</script>
-
+  </script>
 </body>
 </html>
