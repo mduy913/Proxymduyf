@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Multi-Web WebClip Builder (tự tải icon)</title>
+<title>Multi-Web + App WebClip Builder</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 body {
@@ -40,18 +40,15 @@ h1 {
     color: #fff; padding: 10px 12px; font-size: 13px;
     font-family: inherit; outline: none; transition: 0.2s;
 }
-.field textarea {
-    resize: vertical; min-height: 140px; line-height: 1.6;
-    font-family: 'Courier New', monospace; font-size: 12px;
-}
 .field input:focus, .field textarea:focus, .field select:focus {
     border-color: #a855f7; box-shadow: 0 0 15px rgba(168,85,247,0.3);
 }
 .web-row {
     display: flex; gap: 6px; margin-bottom: 6px; align-items: center;
 }
-.web-row input.name { flex: 0 0 90px; }
-.web-row input.url { flex: 1; }
+.web-row input.name { flex: 0 0 80px; }
+.web-row input.url { flex: 1; min-width: 0; }
+.web-row select.type { flex: 0 0 64px; padding: 8px 4px; font-size: 11px; }
 .web-row button {
     flex-shrink: 0; width: 34px; height: 34px;
     background: rgba(239,68,68,0.2);
@@ -143,11 +140,12 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
 <body>
 
 <div class="container">
-    <h1>MULTI-WEB WEBCLIP</h1>
-    <div class="subtitle">1 WebClip chứa nhiều web — icon tự tải từ link</div>
+    <h1>MULTI-WEB + APP WEBCLIP</h1>
+    <div class="subtitle">1 WebClip chứa nhiều web + deep link app (Telegram, Zalo...)</div>
 
     <div class="hint">
-        <b>Mới:</b> Bạn chỉ cần dán <b>link ảnh</b> (https://...), tool sẽ tự tải về và nhúng vào config. Không cần Base64 thủ công.
+        <b>Mới:</b> Hỗ trợ cả <b>web</b> lẫn <b>deep link app</b> (như <code>https://t.me/mduyk_bot</code>).<br>
+        Icon tự tải từ link → tự chuyển Base64 → nhúng vào config.
     </div>
 
     <!-- ============ CẤU HÌNH CHUNG ============ -->
@@ -158,7 +156,7 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
             <input type="text" id="app-name" placeholder="VD: SORA" value="SORA" maxlength="20">
         </div>
         <div class="field">
-            <label>Link ảnh icon (https — tool sẽ tự tải về)</label>
+            <label>Link ảnh icon (https — tool tự tải về)</label>
             <input type="text" id="app-icon-url" placeholder="https://cdn.upanhlaylink.com/i/xxxxx.jpeg">
             <div class="icon-preview-box" id="icon-preview">?</div>
         </div>
@@ -168,7 +166,7 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
         </div>
         <div class="field">
             <label>Tiêu đề hiện trên trang lưới</label>
-            <input type="text" id="grid-title" placeholder="VD: Chọn web để mở" value="Chọn web để mở">
+            <input type="text" id="grid-title" placeholder="VD: Chọn web để mở" value="Chọn web hoặc app để mở">
         </div>
         <div class="field">
             <label>Màu chủ đạo</label>
@@ -193,11 +191,15 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
         </label>
     </div>
 
-    <!-- ============ DANH SÁCH WEB ============ -->
+    <!-- ============ DANH SÁCH WEB/APP ============ -->
     <div class="card">
-        <div class="label">DANH SÁCH WEB (2 web trở lên)</div>
+        <div class="label">DANH SÁCH WEB / APP (2 mục trở lên)</div>
         <div id="web-list"></div>
-        <button class="add-btn" id="add-web">+ Thêm web</button>
+        <button class="add-btn" id="add-web">+ Thêm mục</button>
+        <div class="notice-box">
+            <b>Loại "Web"</b>: mở trong iframe hoặc Safari.<br>
+            <b>Loại "App"</b>: dùng cho deep link như <code>https://t.me/mduyk_bot</code>, <code>zalo://...</code>. Bấm vào sẽ thử mở app, nếu không được thì mở web dự phòng.
+        </div>
     </div>
 
     <!-- ============ PROFILE ============ -->
@@ -242,8 +244,8 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
         <div class="label">HƯỚNG DẪN</div>
         <div class="guide">
             <b>Cài:</b> Nhấn CÀI NGAY (hoặc LƯU TỆP rồi mở trong Files) → Settings → Đã tải Profile → Cài đặt → nhập mật khẩu → Cài.<br>
-            <b>Dùng:</b> Mở WebClip → hiện lưới ô vuông → bấm ô web muốn mở.<br>
-            <b>Thoát:</b> Nếu đang trong iframe, bấm "← Quay lại" ở góc trên.
+            <b>Dùng web:</b> Mở WebClip → lưới ô vuông → bấm ô web → mở trong iframe hoặc Safari.<br>
+            <b>Dùng app:</b> Bấm ô app → iOS hỏi "Mở bằng Telegram/Zalo?" → đồng ý → app mở.
         </div>
     </div>
 </div>
@@ -255,7 +257,7 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
     var $ = function(id) { return document.getElementById(id); };
     var configFile = null;
     var configBlobUrl = null;
-    var iconBase64 = null;   // base64 không có tiền tố data:
+    var iconBase64 = null;
     var iconMime = null;
 
     // ---- Icon preview ----
@@ -264,7 +266,6 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
         previewEl.innerHTML = '<img src="' + src + '" onerror="this.parentNode.innerHTML=\'?\'">';
     }
 
-    // Tải ảnh từ URL -> base64
     function fetchIconAsBase64(url) {
         return new Promise(function(resolve, reject) {
             if (!url) { resolve(null); return; }
@@ -282,7 +283,7 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
                     reader.onload = function() {
                         var dataUrl = reader.result;
                         var comma = dataUrl.indexOf(',');
-                        var meta = dataUrl.substring(5, comma);  // image/jpeg;base64
+                        var meta = dataUrl.substring(5, comma);
                         var mime = meta.split(';')[0];
                         var b64 = dataUrl.substring(comma + 1);
                         resolve({ base64: b64, mime: mime, dataUrl: dataUrl });
@@ -300,7 +301,6 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
         });
     }
 
-    // Khi nhập link -> tự thử tải và preview
     var iconUrlInput = $('app-icon-url');
     var fetchTimer = null;
     iconUrlInput.addEventListener('input', function() {
@@ -315,13 +315,12 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
                     iconBase64 = r.base64; iconMime = r.mime;
                     showPreview(r.dataUrl);
                 }
-            }).catch(function(err) {
+            }).catch(function() {
                 previewEl.innerHTML = '!';
             });
         }, 500);
     });
 
-    // Chọn ảnh từ máy
     $('icon-file').addEventListener('change', function() {
         var file = this.files && this.files[0];
         if (!file) return;
@@ -346,16 +345,20 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
     // ---- Web list ----
     var webListEl = $('web-list');
 
-    function addWebRow(name, url) {
+    function addWebRow(name, url, type) {
         var row = document.createElement('div');
         row.className = 'web-row';
         row.innerHTML =
             '<input type="text" class="name" placeholder="Tên" value="' + escapeAttr(name || '') + '" maxlength="12">' +
-            '<input type="text" class="url" placeholder="https://..." value="' + escapeAttr(url || '') + '">' +
+            '<input type="text" class="url" placeholder="https://... hoặc tg://..." value="' + escapeAttr(url || '') + '">' +
+            '<select class="type">' +
+                '<option value="web"' + (type === 'app' ? '' : ' selected') + '>Web</option>' +
+                '<option value="app"' + (type === 'app' ? ' selected' : '') + '>App</option>' +
+            '</select>' +
             '<button type="button" title="Xoá">×</button>';
         row.querySelector('button').onclick = function() {
             if (webListEl.children.length <= 2) {
-                setStatus('Cần ít nhất 2 web!', 'error');
+                setStatus('Cần ít nhất 2 mục!', 'error');
                 return;
             }
             row.remove();
@@ -363,22 +366,41 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
         webListEl.appendChild(row);
     }
 
-    $('add-web').onclick = function() { addWebRow('', ''); };
+    $('add-web').onclick = function() { addWebRow('', '', 'web'); };
 
-    addWebRow('Web 1', 'https://pqjqqo.com');
-    addWebRow('Web 2', 'https://client.trollmodz.store');
+    addWebRow('Web 1', 'https://pqjqqo.com', 'web');
+    addWebRow('Telegram', 'https://t.me/mduyk_bot', 'app');
 
-    // ---- Normalize URL ----
+    // ---- Normalize URL: chấp nhận mọi scheme ----
     function normalizeUrl(raw) {
         var s = (raw || '').trim();
         if (!s) return '';
+        // Nếu đã có scheme lạ (tg://, zalo://, fb://...) → giữ nguyên
+        if (/^[a-z][a-z0-9+.-]*:/i.test(s) && !/^https?:/i.test(s)) return s;
+        // http(s) → thêm https nếu thiếu
         if (!/^https?:\/\//i.test(s)) s = 'https://' + s;
         return s;
     }
 
-    // ---- Build trang lưới HTML (nhúng vào data URI) ----
-    function buildLauncherHtml(webs, title, color, useIframe) {
-        var itemsJs = JSON.stringify(webs);
+    // Chuyển https://t.me/... → tg://..., https://zalo.me/... → zalo://...
+    function toDeepLink(url) {
+        if (/^https?:\/\/t\.me\//i.test(url)) {
+            return 'tg://' + url.replace(/^https?:\/\/t\.me\//i, '');
+        }
+        if (/^https?:\/\/zalo\.me\//i.test(url)) {
+            return 'zalo://' + url.replace(/^https?:\/\/zalo\.me\//i, '');
+        }
+        if (/^https?:\/\/m\.me\//i.test(url)) {
+            return 'fb-messenger://' + url.replace(/^https?:\/\/m\.me\//i, '');
+        }
+        // Nếu đã là scheme lạ → giữ nguyên
+        if (/^[a-z][a-z0-9+.-]*:/i.test(url) && !/^https?:/i.test(url)) return url;
+        return null;
+    }
+
+    // ---- Build trang lưới HTML ----
+    function buildLauncherHtml(items, title, color, useIframe) {
+        var itemsJs = JSON.stringify(items);
         return '<!DOCTYPE html>\n' +
 '<html lang="vi">\n' +
 '<head>\n' +
@@ -394,10 +416,12 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
 'h1{font-size:24px;text-align:center;margin-bottom:8px;background:linear-gradient(135deg,' + color + ',#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:900;}\n' +
 '.sub{text-align:center;font-size:12px;color:#888;margin-bottom:28px;}\n' +
 '.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:16px;max-width:600px;margin:0 auto;}\n' +
-'.tile{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:18px;padding:16px 8px;text-align:center;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:130px;}\n' +
+'.tile{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:18px;padding:16px 8px;text-align:center;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:130px;position:relative;}\n' +
 '.tile:active{transform:scale(0.95);background:rgba(255,255,255,0.1);}\n' +
 '.tile .icon{width:56px;height:56px;border-radius:14px;background:linear-gradient(135deg,' + color + ',#ec4899);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:900;color:#fff;margin-bottom:10px;box-shadow:0 4px 16px rgba(168,85,247,0.4);}\n' +
 '.tile .name{font-size:12px;font-weight:700;color:#fff;word-break:break-word;line-height:1.3;}\n' +
+'.tile.app .icon{background:linear-gradient(135deg,#22c55e,#16a34a);box-shadow:0 4px 16px rgba(34,197,94,0.4);}\n' +
+'.tile .badge{position:absolute;top:6px;right:6px;background:rgba(34,197,94,0.9);color:#fff;font-size:8px;padding:2px 5px;border-radius:6px;font-weight:800;letter-spacing:0.5px;}\n' +
 '#viewer{position:fixed;top:0;left:0;right:0;bottom:0;background:#000;display:none;z-index:999;}\n' +
 '#viewer iframe{width:100%;height:100%;border:none;background:#fff;}\n' +
 '#viewer .bar{position:absolute;top:0;left:0;right:0;height:44px;background:rgba(0,0,0,0.85);display:flex;align-items:center;padding:0 12px;z-index:1000;backdrop-filter:blur(10px);}\n' +
@@ -410,7 +434,7 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
 '<body>\n' +
 '<div id="grid-view">\n' +
 '<h1>' + escapeHtml(title) + '</h1>\n' +
-'<div class="sub">Bấm vào ô để mở web</div>\n' +
+'<div class="sub">Bấm vào ô để mở</div>\n' +
 '<div class="grid" id="grid"></div>\n' +
 '</div>\n' +
 '<div id="viewer">\n' +
@@ -419,18 +443,40 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
 '</div>\n' +
 '<script>\n' +
 '(function(){\n' +
-'var webs = ' + itemsJs + ';\n' +
+'var items = ' + itemsJs + ';\n' +
 'var useIframe = ' + (useIframe ? 'true' : 'false') + ';\n' +
 'var grid = document.getElementById("grid");\n' +
 'var viewer = document.getElementById("viewer");\n' +
 'var frame = document.getElementById("viewer-frame");\n' +
 'var viewerTitle = document.getElementById("viewer-title");\n' +
-'webs.forEach(function(w){\n' +
+'\n' +
+'function toDeepLink(url) {\n' +
+'  if (/^https?:\\/\\/t\\.me\\//i.test(url)) return "tg://" + url.replace(/^https?:\\/\\/t\\.me\\//i, "");\n' +
+'  if (/^https?:\\/\\/zalo\\.me\\//i.test(url)) return "zalo://" + url.replace(/^https?:\\/\\/zalo\\.me\\//i, "");\n' +
+'  if (/^https?:\\/\\/m\\.me\\//i.test(url)) return "fb-messenger://" + url.replace(/^https?:\\/\\/m\\.me\\//i, "");\n' +
+'  if (/^[a-z][a-z0-9+.-]*:/i.test(url) && !/^https?:/i.test(url)) return url;\n' +
+'  return null;\n' +
+'}\n' +
+'\n' +
+'items.forEach(function(w){\n' +
 '  var t = document.createElement("div");\n' +
-'  t.className = "tile";\n' +
+'  t.className = "tile" + (w.type === "app" ? " app" : "");\n' +
 '  var letter = (w.name || "?").charAt(0).toUpperCase();\n' +
-'  t.innerHTML = \'<div class="icon">\' + letter + \'</div><div class="name">\' + escapeHtml(w.name) + \'</div>\';\n' +
+'  t.innerHTML = \'<div class="icon">\' + letter + \'</div><div class="name">\' + escapeHtml(w.name) + \'</div>\' + (w.type === "app" ? \'<div class="badge">APP</div>\' : "");\n' +
 '  t.onclick = function(){\n' +
+'    if (w.type === "app") {\n' +
+'      var deep = toDeepLink(w.url);\n' +
+'      if (!deep) { window.location.href = w.url; return; }\n' +
+'      var opened = false;\n' +
+'      var timer = setTimeout(function(){\n' +
+'        if (!opened) window.location.href = w.url;\n' +
+'      }, 1500);\n' +
+'      document.addEventListener("visibilitychange", function(){\n' +
+'        if (document.hidden) { opened = true; clearTimeout(timer); }\n' +
+'      }, { once: true });\n' +
+'      window.location.href = deep;\n' +
+'      return;\n' +
+'    }\n' +
 '    if (useIframe) {\n' +
 '      viewerTitle.textContent = w.name;\n' +
 '      frame.src = w.url;\n' +
@@ -442,6 +488,7 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
 '  };\n' +
 '  grid.appendChild(t);\n' +
 '});\n' +
+'\n' +
 'function escapeHtml(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/\'/g,"&#39;");}\n' +
 'document.getElementById("back-btn").onclick = function(){\n' +
 '  frame.src = "about:blank";\n' +
@@ -454,11 +501,10 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
 '</html>';
     }
 
-    // ---- Build payload WebClip ----
+    // ---- Build payload WebClip (Icon = <data> base64) ----
     function buildWebClipPayload(name, url, iconBase64, profileId) {
         var uuid = generateUUID();
         var iconXml = '';
-        // iOS yêu cầu trường Icon là <data> base64, KHÔNG phải URL
         if (iconBase64) {
             iconXml =
                 '            <key>Icon</key>\n' +
@@ -503,31 +549,32 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
         setStatus('Đang xử lý...', 'loading');
 
         var rows = webListEl.querySelectorAll('.web-row');
-        var webs = [];
+        var items = [];
         for (var i = 0; i < rows.length; i++) {
             var name = rows[i].querySelector('.name').value.trim();
-            var url = normalizeUrl(rows[i].querySelector('.url').value);
+            var rawUrl = rows[i].querySelector('.url').value.trim();
+            var type = rows[i].querySelector('.type').value;
+            var url = normalizeUrl(rawUrl);
             if (!url) continue;
-            if (!name) name = 'Web ' + (webs.length + 1);
-            webs.push({ name: name, url: url });
+            if (!name) name = (type === 'app' ? 'App ' : 'Web ') + (items.length + 1);
+            items.push({ name: name, url: url, type: type });
         }
 
-        if (webs.length < 2) {
-            setStatus('Cần ít nhất 2 web!', 'error');
+        if (items.length < 2) {
+            setStatus('Cần ít nhất 2 mục!', 'error');
             btn.disabled = false;
             return;
         }
 
         var appName = $('app-name').value.trim() || 'Multi Web';
         var iconUrl = $('app-icon-url').value.trim();
-        var gridTitle = $('grid-title').value.trim() || 'Chọn web để mở';
+        var gridTitle = $('grid-title').value.trim() || 'Chọn để mở';
         var color = $('theme-color').value;
         var useIframe = $('opt-iframe').checked;
         var profileName = $('profile-name').value.trim() || 'Multi WebClip';
         var profileId = $('profile-id').value.trim() || 'com.mduy.multiclip';
         var noRemove = $('opt-noremove').checked;
 
-        // Nếu đã có ảnh từ file, dùng luôn. Nếu chưa và có link, thử tải.
         var iconPromise;
         if (iconBase64) {
             iconPromise = Promise.resolve();
@@ -542,7 +589,7 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
         }
 
         iconPromise.then(function() {
-            var launcherHtml = buildLauncherHtml(webs, gridTitle, color, useIframe);
+            var launcherHtml = buildLauncherHtml(items, gridTitle, color, useIframe);
             var base64Html = btoa(unescape(encodeURIComponent(launcherHtml)));
             var dataUri = 'data:text/html;charset=utf-8;base64,' + base64Html;
 
@@ -555,7 +602,7 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
 '<plist version="1.0">\n<dict>\n' +
 '    <key>PayloadContent</key>\n    <array>\n' +
 payload + '\n    </array>\n' +
-'    <key>PayloadDescription</key>\n    <string>Multi WebClip - ' + escapeXml(webs.length + ' web') + '</string>\n' +
+'    <key>PayloadDescription</key>\n    <string>Multi WebClip - ' + escapeXml(items.length + ' mục') + '</string>\n' +
 '    <key>PayloadDisplayName</key>\n    <string>' + escapeXml(profileName) + '</string>\n' +
 '    <key>PayloadIdentifier</key>\n    <string>' + escapeXml(profileId) + '</string>\n' +
 '    <key>PayloadOrganization</key>\n    <string>MDUY</string>\n' +
@@ -577,7 +624,7 @@ payload + '\n    </array>\n' +
 
             $('download-row').style.display = 'grid';
             $('guide-card').style.display = 'block';
-            setStatus('Đã tạo WebClip chứa ' + webs.length + ' web' + (iconBase64 ? ' + icon nhúng' : '') + '!', 'success');
+            setStatus('Đã tạo WebClip chứa ' + items.length + ' mục' + (iconBase64 ? ' + icon nhúng' : '') + '!', 'success');
             btn.disabled = false;
         }).catch(function(err) {
             console.error(err);
