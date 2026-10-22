@@ -141,11 +141,11 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
 
 <div class="container">
     <h1>MULTI-WEB + APP WEBCLIP</h1>
-    <div class="subtitle">1 WebClip chứa nhiều web + deep link app (Telegram, Zalo...)</div>
+    <div class="subtitle">1 WebClip chứa nhiều web + link app (mở qua Safari)</div>
 
     <div class="hint">
-        <b>Mới:</b> Hỗ trợ cả <b>web</b> lẫn <b>deep link app</b>.<br>
-        Link Telegram dùng thẳng <code>https://t.me/...</code> để bot nhận đúng lệnh start.
+        <b>Mới:</b> Ô <b>App</b> giờ sẽ <b>mở bằng Safari</b> trước (thay vì gọi deep link trực tiếp).<br>
+        Safari xử lý Universal Link ổn định hơn → iOS hỏi "Mở bằng Telegram?" → vào đúng bot.
     </div>
 
     <!-- ============ CẤU HÌNH CHUNG ============ -->
@@ -198,7 +198,7 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
         <button class="add-btn" id="add-web">+ Thêm mục</button>
         <div class="notice-box">
             <b>Loại "Web"</b>: mở trong iframe hoặc Safari.<br>
-            <b>Loại "App"</b>: dùng cho <code>https://t.me/...</code>, <code>zalo://...</code>, <code>fb-messenger://...</code>. Tool mở thẳng link gốc để app nhận đúng tham số.
+            <b>Loại "App"</b>: mở bằng Safari trước (ổn định hơn deep link), sau đó iOS hỏi mở app.
         </div>
     </div>
 
@@ -245,7 +245,7 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
         <div class="guide">
             <b>Cài:</b> Nhấn CÀI NGAY (hoặc LƯU TỆP rồi mở trong Files) → Settings → Đã tải Profile → Cài đặt → nhập mật khẩu → Cài.<br>
             <b>Dùng web:</b> Mở WebClip → lưới ô vuông → bấm ô web → mở trong iframe hoặc Safari.<br>
-            <b>Dùng app:</b> Bấm ô app → iOS hỏi "Mở bằng Telegram/Zalo?" → đồng ý → app mở đúng chat/bot.
+            <b>Dùng app:</b> Bấm ô app → mở Safari → iOS hỏi "Mở bằng Telegram?" → đồng ý → vào đúng bot/chat.
         </div>
     </div>
 </div>
@@ -371,13 +371,11 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
     addWebRow('Web 1', 'https://pqjqqo.com', 'web');
     addWebRow('Telegram', 'https://t.me/mduyk_bot', 'app');
 
-    // ---- Normalize URL: chấp nhận mọi scheme ----
+    // ---- Normalize URL ----
     function normalizeUrl(raw) {
         var s = (raw || '').trim();
         if (!s) return '';
-        // Nếu đã có scheme lạ (tg://, zalo://, fb://...) → giữ nguyên
         if (/^[a-z][a-z0-9+.-]*:/i.test(s) && !/^https?:/i.test(s)) return s;
-        // http(s) → thêm https nếu thiếu
         if (!/^https?:\/\//i.test(s)) s = 'https://' + s;
         return s;
     }
@@ -441,8 +439,13 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
 '  t.innerHTML = \'<div class="icon">\' + letter + \'</div><div class="name">\' + escapeHtml(w.name) + \'</div>\' + (w.type === "app" ? \'<div class="badge">APP</div>\' : "");\n' +
 '  t.onclick = function(){\n' +
 '    if (w.type === "app") {\n' +
-'      // Mở thẳng URL gốc — Telegram/Zalo nhận đúng tham số, bot nhận start\n' +
-'      window.location.href = w.url;\n' +
+'      // Mở bằng Safari: dùng window.open với target _blank để thoát khỏi WebClip full-screen\n' +
+'      // Safari xử lý Universal Link tốt hơn, sau đó iOS sẽ hỏi "Mở bằng Telegram/Zalo?"\n' +
+'      var opened = window.open(w.url, "_blank");\n' +
+'      if (!opened) {\n' +
+'        // Popup bị chặn → fallback location.href (vẫn có thể mở Safari tùy iOS)\n' +
+'        window.location.href = w.url;\n' +
+'      }\n' +
 '      return;\n' +
 '    }\n' +
 '    if (useIframe) {\n' +
@@ -451,7 +454,7 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
 '      viewer.classList.add("show");\n' +
 '      document.body.classList.add("viewing");\n' +
 '    } else {\n' +
-'      window.location.href = w.url;\n' +
+'      window.open(w.url, "_blank") || (window.location.href = w.url);\n' +
 '    }\n' +
 '  };\n' +
 '  grid.appendChild(t);\n' +
@@ -469,7 +472,7 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
 '</html>';
     }
 
-    // ---- Build payload WebClip (Icon = <data> base64) ----
+    // ---- Build payload WebClip ----
     function buildWebClipPayload(name, url, iconBase64, profileId) {
         var uuid = generateUUID();
         var iconXml = '';
@@ -571,13 +574,20 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
 '    <key>PayloadContent</key>\n    <array>\n' +
 payload + '\n    </array>\n' +
 '    <key>PayloadDescription</key>\n    <string>Multi WebClip - ' + escapeXml(items.length + ' mục') + '</string>\n' +
-'    <key>PayloadDisplayName</key>\n    <string>' + escapeXml(profileName) + '</string>\n' +
-'    <key>PayloadIdentifier</key>\n    <string>' + escapeXml(profileId) + '</string>\n' +
-'    <key>PayloadOrganization</key>\n    <string>MDUY</string>\n' +
-'    <key>PayloadRemovalDisallowed</key>\n    <' + noRemoveStr + '/>\n' +
-'    <key>PayloadType</key>\n    <string>Configuration</string>\n' +
-'    <key>PayloadUUID</key>\n    <string>' + generateUUID() + '</string>\n' +
-'    <key>PayloadVersion</key>\n    <integer>1</integer>\n' +
+'    <key>PayloadDisplayName</key>\n' +
+'    <string>' + escapeXml(profileName) + '</string>\n' +
+'    <key>PayloadIdentifier</key>\n' +
+'    <string>' + escapeXml(profileId) + '</string>\n' +
+'    <key>PayloadOrganization</key>\n' +
+'    <string>MDUY</string>\n' +
+'    <key>PayloadRemovalDisallowed</key>\n' +
+'    <' + noRemoveStr + '/>\n' +
+'    <key>PayloadType</key>\n' +
+'    <string>Configuration</string>\n' +
+'    <key>PayloadUUID</key>\n' +
+'    <string>' + generateUUID() + '</string>\n' +
+'    <key>PayloadVersion</key>\n' +
+'    <integer>1</integer>\n' +
 '</dict>\n</plist>';
 
             if (configBlobUrl) URL.revokeObjectURL(configBlobUrl);
