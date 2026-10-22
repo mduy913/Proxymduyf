@@ -144,8 +144,8 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
     <div class="subtitle">1 WebClip chứa nhiều web + deep link app (Telegram, Zalo...)</div>
 
     <div class="hint">
-        <b>Mới:</b> Hỗ trợ cả <b>web</b> lẫn <b>deep link app</b> (như <code>https://t.me/mduyk_bot</code>).<br>
-        Icon tự tải từ link → tự chuyển Base64 → nhúng vào config.
+        <b>Mới:</b> Hỗ trợ cả <b>web</b> lẫn <b>deep link app</b>.<br>
+        Link Telegram dùng thẳng <code>https://t.me/...</code> để bot nhận đúng lệnh start.
     </div>
 
     <!-- ============ CẤU HÌNH CHUNG ============ -->
@@ -166,7 +166,7 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
         </div>
         <div class="field">
             <label>Tiêu đề hiện trên trang lưới</label>
-            <input type="text" id="grid-title" placeholder="VD: Chọn web để mở" value="Chọn web hoặc app để mở">
+            <input type="text" id="grid-title" placeholder="VD: Chọn để mở" value="Chọn web hoặc app để mở">
         </div>
         <div class="field">
             <label>Màu chủ đạo</label>
@@ -198,7 +198,7 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
         <button class="add-btn" id="add-web">+ Thêm mục</button>
         <div class="notice-box">
             <b>Loại "Web"</b>: mở trong iframe hoặc Safari.<br>
-            <b>Loại "App"</b>: dùng cho deep link như <code>https://t.me/mduyk_bot</code>, <code>zalo://...</code>. Bấm vào sẽ thử mở app, nếu không được thì mở web dự phòng.
+            <b>Loại "App"</b>: dùng cho <code>https://t.me/...</code>, <code>zalo://...</code>, <code>fb-messenger://...</code>. Tool mở thẳng link gốc để app nhận đúng tham số.
         </div>
     </div>
 
@@ -245,7 +245,7 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
         <div class="guide">
             <b>Cài:</b> Nhấn CÀI NGAY (hoặc LƯU TỆP rồi mở trong Files) → Settings → Đã tải Profile → Cài đặt → nhập mật khẩu → Cài.<br>
             <b>Dùng web:</b> Mở WebClip → lưới ô vuông → bấm ô web → mở trong iframe hoặc Safari.<br>
-            <b>Dùng app:</b> Bấm ô app → iOS hỏi "Mở bằng Telegram/Zalo?" → đồng ý → app mở.
+            <b>Dùng app:</b> Bấm ô app → iOS hỏi "Mở bằng Telegram/Zalo?" → đồng ý → app mở đúng chat/bot.
         </div>
     </div>
 </div>
@@ -382,22 +382,6 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
         return s;
     }
 
-    // Chuyển https://t.me/... → tg://..., https://zalo.me/... → zalo://...
-    function toDeepLink(url) {
-        if (/^https?:\/\/t\.me\//i.test(url)) {
-            return 'tg://' + url.replace(/^https?:\/\/t\.me\//i, '');
-        }
-        if (/^https?:\/\/zalo\.me\//i.test(url)) {
-            return 'zalo://' + url.replace(/^https?:\/\/zalo\.me\//i, '');
-        }
-        if (/^https?:\/\/m\.me\//i.test(url)) {
-            return 'fb-messenger://' + url.replace(/^https?:\/\/m\.me\//i, '');
-        }
-        // Nếu đã là scheme lạ → giữ nguyên
-        if (/^[a-z][a-z0-9+.-]*:/i.test(url) && !/^https?:/i.test(url)) return url;
-        return null;
-    }
-
     // ---- Build trang lưới HTML ----
     function buildLauncherHtml(items, title, color, useIframe) {
         var itemsJs = JSON.stringify(items);
@@ -450,14 +434,6 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
 'var frame = document.getElementById("viewer-frame");\n' +
 'var viewerTitle = document.getElementById("viewer-title");\n' +
 '\n' +
-'function toDeepLink(url) {\n' +
-'  if (/^https?:\\/\\/t\\.me\\//i.test(url)) return "tg://" + url.replace(/^https?:\\/\\/t\\.me\\//i, "");\n' +
-'  if (/^https?:\\/\\/zalo\\.me\\//i.test(url)) return "zalo://" + url.replace(/^https?:\\/\\/zalo\\.me\\//i, "");\n' +
-'  if (/^https?:\\/\\/m\\.me\\//i.test(url)) return "fb-messenger://" + url.replace(/^https?:\\/\\/m\\.me\\//i, "");\n' +
-'  if (/^[a-z][a-z0-9+.-]*:/i.test(url) && !/^https?:/i.test(url)) return url;\n' +
-'  return null;\n' +
-'}\n' +
-'\n' +
 'items.forEach(function(w){\n' +
 '  var t = document.createElement("div");\n' +
 '  t.className = "tile" + (w.type === "app" ? " app" : "");\n' +
@@ -465,16 +441,8 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
 '  t.innerHTML = \'<div class="icon">\' + letter + \'</div><div class="name">\' + escapeHtml(w.name) + \'</div>\' + (w.type === "app" ? \'<div class="badge">APP</div>\' : "");\n' +
 '  t.onclick = function(){\n' +
 '    if (w.type === "app") {\n' +
-'      var deep = toDeepLink(w.url);\n' +
-'      if (!deep) { window.location.href = w.url; return; }\n' +
-'      var opened = false;\n' +
-'      var timer = setTimeout(function(){\n' +
-'        if (!opened) window.location.href = w.url;\n' +
-'      }, 1500);\n' +
-'      document.addEventListener("visibilitychange", function(){\n' +
-'        if (document.hidden) { opened = true; clearTimeout(timer); }\n' +
-'      }, { once: true });\n' +
-'      window.location.href = deep;\n' +
+'      // Mở thẳng URL gốc — Telegram/Zalo nhận đúng tham số, bot nhận start\n' +
+'      window.location.href = w.url;\n' +
 '      return;\n' +
 '    }\n' +
 '    if (useIframe) {\n' +
