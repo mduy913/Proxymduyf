@@ -141,11 +141,10 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
 
 <div class="container">
     <h1>MULTI-WEB + APP WEBCLIP</h1>
-    <div class="subtitle">1 WebClip chứa nhiều web + link app (mở qua Safari)</div>
+    <div class="subtitle">Web ở lại WebClip — App mở qua Safari</div>
 
     <div class="hint">
-        <b>Mới:</b> Ô <b>App</b> giờ sẽ <b>mở bằng Safari</b> trước (thay vì gọi deep link trực tiếp).<br>
-        Safari xử lý Universal Link ổn định hơn → iOS hỏi "Mở bằng Telegram?" → vào đúng bot.
+        <b>Đã sửa:</b> Bỏ <code>sandbox</code> khỏi iframe — nguyên nhân khiến web load mãi. Iframe giờ hoạt động như Safari thật.
     </div>
 
     <!-- ============ CẤU HÌNH CHUNG ============ -->
@@ -182,7 +181,7 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
         <label class="switch-row">
             <span class="switch-label">
                 Mở web trong WebClip (iframe)
-                <small>Bật: ở lại trong app. Tắt: mở bằng Safari</small>
+                <small>Bật: web mở trong iframe. Tắt: web mở trong webview (vẫn ở WebClip)</small>
             </span>
             <label class="switch">
                 <input type="checkbox" id="opt-iframe" checked>
@@ -197,8 +196,8 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
         <div id="web-list"></div>
         <button class="add-btn" id="add-web">+ Thêm mục</button>
         <div class="notice-box">
-            <b>Loại "Web"</b>: mở trong iframe hoặc Safari.<br>
-            <b>Loại "App"</b>: mở bằng Safari trước (ổn định hơn deep link), sau đó iOS hỏi mở app.
+            <b>Web</b>: mở trong iframe hoặc webview — không bao giờ nhảy Safari.<br>
+            <b>App</b>: dùng <code>&lt;a target="_blank"&gt;</code> để mở Safari → iOS hỏi "Mở bằng Telegram?" → vào app.
         </div>
     </div>
 
@@ -244,8 +243,8 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
         <div class="label">HƯỚNG DẪN</div>
         <div class="guide">
             <b>Cài:</b> Nhấn CÀI NGAY (hoặc LƯU TỆP rồi mở trong Files) → Settings → Đã tải Profile → Cài đặt → nhập mật khẩu → Cài.<br>
-            <b>Dùng web:</b> Mở WebClip → lưới ô vuông → bấm ô web → mở trong iframe hoặc Safari.<br>
-            <b>Dùng app:</b> Bấm ô app → mở Safari → iOS hỏi "Mở bằng Telegram?" → đồng ý → vào đúng bot/chat.
+            <b>Dùng web:</b> Mở WebClip → bấm ô web → mở trong iframe (hoặc webview) — ở lại WebClip.<br>
+            <b>Dùng app:</b> Bấm ô app → mở Safari → iOS hỏi "Mở bằng Telegram?" → đồng ý → vào app.
         </div>
     </div>
 </div>
@@ -350,7 +349,7 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
         row.className = 'web-row';
         row.innerHTML =
             '<input type="text" class="name" placeholder="Tên" value="' + escapeAttr(name || '') + '" maxlength="12">' +
-            '<input type="text" class="url" placeholder="https://... hoặc tg://..." value="' + escapeAttr(url || '') + '">' +
+            '<input type="text" class="url" placeholder="https://..." value="' + escapeAttr(url || '') + '">' +
             '<select class="type">' +
                 '<option value="web"' + (type === 'app' ? '' : ' selected') + '>Web</option>' +
                 '<option value="app"' + (type === 'app' ? ' selected' : '') + '>App</option>' +
@@ -421,7 +420,7 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
 '</div>\n' +
 '<div id="viewer">\n' +
 '<div class="bar"><button id="back-btn">← Quay lại</button><div class="title" id="viewer-title"></div></div>\n' +
-'<iframe id="viewer-frame" sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-top-navigation"></iframe>\n' +
+'<iframe id="viewer-frame" referrerpolicy="no-referrer-when-downgrade" allow="*"></iframe>\n' +
 '</div>\n' +
 '<script>\n' +
 '(function(){\n' +
@@ -432,6 +431,17 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
 'var frame = document.getElementById("viewer-frame");\n' +
 'var viewerTitle = document.getElementById("viewer-title");\n' +
 '\n' +
+'// Chuyển hướng đáng tin cậy trong WebClip iOS\n' +
+'function navigateTo(url, newTab) {\n' +
+'  var a = document.createElement("a");\n' +
+'  a.href = url;\n' +
+'  a.target = newTab ? "_blank" : "_self";\n' +
+'  a.rel = "noopener noreferrer";\n' +
+'  document.body.appendChild(a);\n' +
+'  a.click();\n' +
+'  setTimeout(function(){ if (a.parentNode) a.parentNode.removeChild(a); }, 100);\n' +
+'}\n' +
+'\n' +
 'items.forEach(function(w){\n' +
 '  var t = document.createElement("div");\n' +
 '  t.className = "tile" + (w.type === "app" ? " app" : "");\n' +
@@ -439,13 +449,7 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
 '  t.innerHTML = \'<div class="icon">\' + letter + \'</div><div class="name">\' + escapeHtml(w.name) + \'</div>\' + (w.type === "app" ? \'<div class="badge">APP</div>\' : "");\n' +
 '  t.onclick = function(){\n' +
 '    if (w.type === "app") {\n' +
-'      // Mở bằng Safari: dùng window.open với target _blank để thoát khỏi WebClip full-screen\n' +
-'      // Safari xử lý Universal Link tốt hơn, sau đó iOS sẽ hỏi "Mở bằng Telegram/Zalo?"\n' +
-'      var opened = window.open(w.url, "_blank");\n' +
-'      if (!opened) {\n' +
-'        // Popup bị chặn → fallback location.href (vẫn có thể mở Safari tùy iOS)\n' +
-'        window.location.href = w.url;\n' +
-'      }\n' +
+'      navigateTo(w.url, true);\n' +
 '      return;\n' +
 '    }\n' +
 '    if (useIframe) {\n' +
@@ -454,7 +458,7 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
 '      viewer.classList.add("show");\n' +
 '      document.body.classList.add("viewing");\n' +
 '    } else {\n' +
-'      window.open(w.url, "_blank") || (window.location.href = w.url);\n' +
+'      navigateTo(w.url, false);\n' +
 '    }\n' +
 '  };\n' +
 '  grid.appendChild(t);\n' +
@@ -574,14 +578,10 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
 '    <key>PayloadContent</key>\n    <array>\n' +
 payload + '\n    </array>\n' +
 '    <key>PayloadDescription</key>\n    <string>Multi WebClip - ' + escapeXml(items.length + ' mục') + '</string>\n' +
-'    <key>PayloadDisplayName</key>\n' +
-'    <string>' + escapeXml(profileName) + '</string>\n' +
-'    <key>PayloadIdentifier</key>\n' +
-'    <string>' + escapeXml(profileId) + '</string>\n' +
-'    <key>PayloadOrganization</key>\n' +
-'    <string>MDUY</string>\n' +
-'    <key>PayloadRemovalDisallowed</key>\n' +
-'    <' + noRemoveStr + '/>\n' +
+'    <key>PayloadDisplayName</key>\n    <string>' + escapeXml(profileName) + '</string>\n' +
+'    <key>PayloadIdentifier</key>\n    <string>' + escapeXml(profileId) + '</string>\n' +
+'    <key>PayloadOrganization</key>\n    <string>MDUY</string>\n' +
+'    <key>PayloadRemovalDisallowed</key>\n    <' + noRemoveStr + '/>\n' +
 '    <key>PayloadType</key>\n' +
 '    <string>Configuration</string>\n' +
 '    <key>PayloadUUID</key>\n' +
