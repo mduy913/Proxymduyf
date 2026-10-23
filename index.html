@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Multi-Web WebClip Builder</title>
+<title>Multi-Web WebClip Full-Screen</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 body {
@@ -128,10 +128,11 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
 
 <div class="container">
     <h1>MULTI-WEB WEBCLIP</h1>
-    <div class="subtitle">1 WebClip — nhiều nút, bấm nút nào mở thẳng web đó</div>
+    <div class="subtitle">1 WebClip full-screen — nhiều web, bấm nút mở thẳng web đó</div>
 
     <div class="hint">
-        <b>Cách hoạt động:</b> WebClip mở trang lưới có các nút. Bấm nút nào → <b>điều hướng thẳng</b> tới URL đó (không iframe) → web load bình thường như WebClip 1-web.
+        <b>Cơ chế:</b> WebClip full-screen → trang lưới → bấm nút → <code>location.href = url</code> → web mở <b>trong webview của WebClip</b> (toàn màn hình, không thanh địa chỉ).<br>
+        Đây là cách duy nhất vừa full-screen vừa load được web (không iframe → không bị chặn).
     </div>
 
     <!-- ============ CẤU HÌNH CHUNG ============ -->
@@ -211,7 +212,8 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
         <div class="label">HƯỚNG DẪN</div>
         <div class="guide">
             <b>Cài:</b> CÀI NGAY (hoặc LƯU TỆP rồi mở trong Files) → Settings → Đã tải Profile → Cài đặt → nhập mật khẩu → Cài.<br>
-            <b>Dùng:</b> Mở WebClip → thấy lưới nút → bấm nút web muốn mở → trình duyệt mở thẳng web đó.
+            <b>Dùng:</b> Mở WebClip → lưới nút → bấm nút web → web mở <b>toàn màn hình trong WebClip</b>.<br>
+            <b>Quay lại lưới:</b> Tắt WebClip mở lại (vì web chiếm toàn màn hình).
         </div>
     </div>
 </div>
@@ -257,7 +259,7 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
         return s;
     }
 
-    // ---- Build trang lưới HTML (dùng <a href> điều hướng thẳng) ----
+    // ---- Build trang lưới HTML (location.href → full-screen) ----
     function buildLauncherHtml(items, title, color) {
         var itemsJs = JSON.stringify(items);
         return '<!DOCTYPE html>\n' +
@@ -284,7 +286,7 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
 '<body>\n' +
 '<div id="grid-view">\n' +
 '<h1>' + escapeHtml(title) + '</h1>\n' +
-'<div class="sub">Bấm vào ô để mở web</div>\n' +
+'<div class="sub">Bấm vào ô để mở web (toàn màn hình)</div>\n' +
 '<div class="grid" id="grid"></div>\n' +
 '</div>\n' +
 '<script>\n' +
@@ -292,12 +294,15 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
 'var items = ' + itemsJs + ';\n' +
 'var grid = document.getElementById("grid");\n' +
 'items.forEach(function(w){\n' +
-'  var a = document.createElement("a");\n' +
-'  a.className = "tile";\n' +
-'  a.href = w.url;\n' +
+'  var t = document.createElement("div");\n' +
+'  t.className = "tile";\n' +
 '  var letter = (w.name || "?").charAt(0).toUpperCase();\n' +
-'  a.innerHTML = \'<div class="icon">\' + letter + \'</div><div class="name">\' + escapeHtml(w.name) + \'</div>\';\n' +
-'  grid.appendChild(a);\n' +
+'  t.innerHTML = \'<div class="icon">\' + letter + \'</div><div class="name">\' + escapeHtml(w.name) + \'</div>\';\n' +
+'  t.onclick = function(){\n' +
+'    // Điều hướng thẳng — iOS mở URL trong webview của WebClip full-screen\n' +
+'    window.location.href = w.url;\n' +
+'  };\n' +
+'  grid.appendChild(t);\n' +
 '});\n' +
 'function escapeHtml(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/\'/g,"&#39;");}\n' +
 '})();\n' +
@@ -385,12 +390,10 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
                     return;
                 }
 
-                // Build launcher HTML
                 var launcherHtml = buildLauncherHtml(items, gridTitle, color);
                 var base64Html = btoa(unescape(encodeURIComponent(launcherHtml)));
                 var dataUri = 'data:text/html;charset=utf-8;base64,' + base64Html;
 
-                // Build payload
                 var payload = buildWebClipPayload(appName, dataUri, iconUrl, profileId);
                 var noRemoveStr = noRemove ? 'true' : 'false';
 
@@ -407,7 +410,8 @@ payload + '\n    </array>\n' +
 '    <key>PayloadRemovalDisallowed</key>\n    <' + noRemoveStr + '/>\n' +
 '    <key>PayloadType</key>\n    <string>Configuration</string>\n' +
 '    <key>PayloadUUID</key>\n    <string>' + generateUUID() + '</string>\n' +
-'    <key>PayloadVersion</key>\n    <integer>1</integer>\n' +
+'    <key>PayloadVersion</key>\n' +
+'    <integer>1</integer>\n' +
 '</dict>\n</plist>';
 
                 if (configBlobUrl) URL.revokeObjectURL(configBlobUrl);
