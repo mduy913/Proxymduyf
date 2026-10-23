@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Multi-Web + App WebClip Builder</title>
+<title>Multi-Web WebClip Builder</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 body {
@@ -40,15 +40,18 @@ h1 {
     color: #fff; padding: 10px 12px; font-size: 13px;
     font-family: inherit; outline: none; transition: 0.2s;
 }
+.field textarea {
+    resize: vertical; min-height: 140px; line-height: 1.6;
+    font-family: 'Courier New', monospace; font-size: 12px;
+}
 .field input:focus, .field textarea:focus, .field select:focus {
     border-color: #a855f7; box-shadow: 0 0 15px rgba(168,85,247,0.3);
 }
 .web-row {
     display: flex; gap: 6px; margin-bottom: 6px; align-items: center;
 }
-.web-row input.name { flex: 0 0 80px; }
-.web-row input.url { flex: 1; min-width: 0; }
-.web-row select.type { flex: 0 0 64px; padding: 8px 4px; font-size: 11px; }
+.web-row input.name { flex: 0 0 90px; }
+.web-row input.url { flex: 1; }
 .web-row button {
     flex-shrink: 0; width: 34px; height: 34px;
     background: rgba(239,68,68,0.2);
@@ -106,6 +109,12 @@ button.save-btn small { font-size: 9px; opacity: 0.8; font-weight: 600; }
     padding: 10px 12px; font-size: 11px; color: #fbbf24;
     line-height: 1.6; margin-top: 8px;
 }
+.warning-box {
+    background: rgba(239,68,68,0.1);
+    border: 1px solid rgba(239,68,68,0.4); border-radius: 10px;
+    padding: 10px 12px; font-size: 11px; color: #fca5a5;
+    line-height: 1.6; margin-top: 8px;
+}
 .switch-row {
     display: flex; justify-content: space-between; align-items: center;
     padding: 10px 12px; background: rgba(0,0,0,0.3); border-radius: 9px;
@@ -128,24 +137,20 @@ input:checked + .slider-sw { background-color: rgba(34,197,94,0.3); border-color
 input:checked + .slider-sw:before { transform: translateX(20px); background-color: #22c55e; box-shadow: 0 0 10px #22c55e; }
 .guide { font-size: 12px; line-height: 1.8; color: #ddd; }
 .guide code { background: rgba(168,85,247,0.2); padding: 2px 6px; border-radius: 4px; font-size: 11px; color: #d0b0ff; }
-.icon-preview-box {
-    width: 64px; height: 64px; border-radius: 14px;
-    background: rgba(0,0,0,0.4); border: 1px dashed rgba(168,85,247,0.4);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 24px; color: #666; margin-top: 6px; overflow: hidden;
-}
-.icon-preview-box img { width: 100%; height: 100%; object-fit: cover; }
 </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>MULTI-WEB + APP WEBCLIP</h1>
-    <div class="subtitle">Web mở trong WebClip (không thanh Safari) — App mở Safari</div>
+    <h1>MULTI-WEB WEBCLIP</h1>
+    <div class="subtitle">1 WebClip chứa nhiều web — mở ra lưới ô vuông, bấm ô nào mở web đó</div>
 
     <div class="hint">
-        <b>Quan trọng:</b> Đã <b>bỏ iframe</b>. Mỗi ô web sẽ mở trực tiếp trong webview của WebClip → <b>load được mọi URL</b>, <b>không có thanh Safari</b>.<br>
-        Nhược điểm: không có nút "← Quay lại" — muốn về lưới phải tắt WebClip mở lại.
+        <b>Cách dùng:</b><br>
+        1. Nhập tên app (hiện dưới icon)<br>
+        2. Thêm các web: tên + URL<br>
+        3. Nhấn TẠO → cài WebClip<br>
+        4. Mở WebClip → hiện lưới ô vuông → bấm ô nào mở web đó
     </div>
 
     <!-- ============ CẤU HÌNH CHUNG ============ -->
@@ -156,17 +161,12 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
             <input type="text" id="app-name" placeholder="VD: SORA" value="SORA" maxlength="20">
         </div>
         <div class="field">
-            <label>Link ảnh icon (https — tool tự tải về)</label>
-            <input type="text" id="app-icon-url" placeholder="https://cdn.upanhlaylink.com/i/xxxxx.jpeg">
-            <div class="icon-preview-box" id="icon-preview">?</div>
-        </div>
-        <div class="field">
-            <label>Hoặc chọn ảnh từ máy (nếu link bị chặn CORS)</label>
-            <input type="file" id="icon-file" accept="image/*">
+            <label>URL ảnh icon ngoài màn hình chính (https — để trống dùng mặc định iOS)</label>
+            <input type="text" id="app-icon-url" placeholder="https://i.imgur.com/xxxxx.png">
         </div>
         <div class="field">
             <label>Tiêu đề hiện trên trang lưới</label>
-            <input type="text" id="grid-title" placeholder="VD: Chọn để mở" value="Chọn web hoặc app để mở">
+            <input type="text" id="grid-title" placeholder="VD: Chọn web để mở" value="Chọn web để mở">
         </div>
         <div class="field">
             <label>Màu chủ đạo</label>
@@ -179,16 +179,26 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
                 <option value="#ef4444">Đỏ</option>
             </select>
         </div>
+        <label class="switch-row">
+            <span class="switch-label">
+                Mở web trong WebClip (iframe)
+                <small>Bật: ở lại trong app. Tắt: mở bằng Safari</small>
+            </span>
+            <label class="switch">
+                <input type="checkbox" id="opt-iframe" checked>
+                <span class="slider-sw"></span>
+            </label>
+        </label>
     </div>
 
-    <!-- ============ DANH SÁCH WEB/APP ============ -->
+    <!-- ============ DANH SÁCH WEB ============ -->
     <div class="card">
-        <div class="label">DANH SÁCH WEB / APP (2 mục trở lên)</div>
+        <div class="label">DANH SÁCH WEB (2 web trở lên)</div>
         <div id="web-list"></div>
-        <button class="add-btn" id="add-web">+ Thêm mục</button>
+        <button class="add-btn" id="add-web">+ Thêm web</button>
         <div class="notice-box">
-            <b>Web</b>: mở trong webview của WebClip — không thanh Safari, load được mọi URL.<br>
-            <b>App</b>: mở Safari → iOS hỏi "Mở bằng Telegram?" → vào app.
+            <b>Tên</b> hiện trên ô vuông. <b>URL</b> là link web thực tế.<br>
+            Nếu không ghi <code>https://</code>, tool tự thêm.
         </div>
     </div>
 
@@ -234,8 +244,8 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
         <div class="label">HƯỚNG DẪN</div>
         <div class="guide">
             <b>Cài:</b> Nhấn CÀI NGAY (hoặc LƯU TỆP rồi mở trong Files) → Settings → Đã tải Profile → Cài đặt → nhập mật khẩu → Cài.<br>
-            <b>Dùng web:</b> Mở WebClip → bấm ô web → web mở toàn màn hình trong WebClip, không có thanh Safari.<br>
-            <b>Dùng app:</b> Bấm ô app → mở Safari → iOS hỏi "Mở bằng Telegram?" → đồng ý → vào app.
+            <b>Dùng:</b> Mở WebClip → hiện lưới ô vuông → bấm ô web muốn mở.<br>
+            <b>Thoát:</b> Nếu đang trong iframe, bấm nút "← Quay lại" ở góc trên.
         </div>
     </div>
 </div>
@@ -247,108 +257,20 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
     var $ = function(id) { return document.getElementById(id); };
     var configFile = null;
     var configBlobUrl = null;
-    var iconBase64 = null;
-    var iconMime = null;
-
-    // ---- Icon preview ----
-    var previewEl = $('icon-preview');
-    function showPreview(src) {
-        previewEl.innerHTML = '<img src="' + src + '" onerror="this.parentNode.innerHTML=\'?\'">';
-    }
-
-    function fetchIconAsBase64(url) {
-        return new Promise(function(resolve, reject) {
-            if (!url) { resolve(null); return; }
-            if (!/^https?:\/\//i.test(url)) { reject(new Error('Link ảnh phải bắt đầu bằng http/https')); return; }
-            fetch(url, { mode: 'cors' })
-                .then(function(res) {
-                    if (!res.ok) throw new Error('Không tải được ảnh (HTTP ' + res.status + ')');
-                    var ct = res.headers.get('content-type') || '';
-                    if (ct.indexOf('image/') !== 0) throw new Error('Link không phải ảnh (content-type: ' + ct + ')');
-                    return res.blob();
-                })
-                .then(function(blob) {
-                    if (blob.size > 1024 * 1024) throw new Error('Ảnh quá 1MB, iOS sẽ từ chối');
-                    var reader = new FileReader();
-                    reader.onload = function() {
-                        var dataUrl = reader.result;
-                        var comma = dataUrl.indexOf(',');
-                        var meta = dataUrl.substring(5, comma);
-                        var mime = meta.split(';')[0];
-                        var b64 = dataUrl.substring(comma + 1);
-                        resolve({ base64: b64, mime: mime, dataUrl: dataUrl });
-                    };
-                    reader.onerror = function() { reject(new Error('Lỗi đọc file ảnh')); };
-                    reader.readAsDataURL(blob);
-                })
-                .catch(function(err) {
-                    if (err.name === 'TypeError') {
-                        reject(new Error('Không tải được ảnh — có thể bị chặn CORS. Hãy chọn ảnh từ máy.'));
-                    } else {
-                        reject(err);
-                    }
-                });
-        });
-    }
-
-    var iconUrlInput = $('app-icon-url');
-    var fetchTimer = null;
-    iconUrlInput.addEventListener('input', function() {
-        var url = this.value.trim();
-        iconBase64 = null; iconMime = null;
-        if (!url) { previewEl.innerHTML = '?'; return; }
-        if (fetchTimer) clearTimeout(fetchTimer);
-        fetchTimer = setTimeout(function() {
-            previewEl.innerHTML = '...';
-            fetchIconAsBase64(url).then(function(r) {
-                if (r) {
-                    iconBase64 = r.base64; iconMime = r.mime;
-                    showPreview(r.dataUrl);
-                }
-            }).catch(function() {
-                previewEl.innerHTML = '!';
-            });
-        }, 500);
-    });
-
-    $('icon-file').addEventListener('change', function() {
-        var file = this.files && this.files[0];
-        if (!file) return;
-        if (file.size > 1024 * 1024) {
-            setStatus('Ảnh quá 1MB, iOS sẽ từ chối', 'error');
-            return;
-        }
-        var reader = new FileReader();
-        reader.onload = function() {
-            var dataUrl = reader.result;
-            var comma = dataUrl.indexOf(',');
-            var meta = dataUrl.substring(5, comma);
-            var mime = meta.split(';')[0];
-            var b64 = dataUrl.substring(comma + 1);
-            iconBase64 = b64; iconMime = mime;
-            showPreview(dataUrl);
-            setStatus('Đã chọn ảnh từ máy', 'success');
-        };
-        reader.readAsDataURL(file);
-    });
 
     // ---- Web list ----
     var webListEl = $('web-list');
 
-    function addWebRow(name, url, type) {
+    function addWebRow(name, url) {
         var row = document.createElement('div');
         row.className = 'web-row';
         row.innerHTML =
             '<input type="text" class="name" placeholder="Tên" value="' + escapeAttr(name || '') + '" maxlength="12">' +
             '<input type="text" class="url" placeholder="https://..." value="' + escapeAttr(url || '') + '">' +
-            '<select class="type">' +
-                '<option value="web"' + (type === 'app' ? '' : ' selected') + '>Web</option>' +
-                '<option value="app"' + (type === 'app' ? ' selected' : '') + '>App</option>' +
-            '</select>' +
             '<button type="button" title="Xoá">×</button>';
         row.querySelector('button').onclick = function() {
             if (webListEl.children.length <= 2) {
-                setStatus('Cần ít nhất 2 mục!', 'error');
+                setStatus('Cần ít nhất 2 web!', 'error');
                 return;
             }
             row.remove();
@@ -356,23 +278,25 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
         webListEl.appendChild(row);
     }
 
-    $('add-web').onclick = function() { addWebRow('', '', 'web'); };
+    $('add-web').onclick = function() {
+        addWebRow('', '');
+    };
 
-    addWebRow('Web 1', 'https://pqjqqo.com', 'web');
-    addWebRow('Telegram', 'https://t.me/mduyk_bot', 'app');
+    // Khởi tạo 2 dòng mặc định
+    addWebRow('Web 1', 'https://pqjqqo.com');
+    addWebRow('Web 2', 'https://client.trollmodz.store');
 
     // ---- Normalize URL ----
     function normalizeUrl(raw) {
         var s = (raw || '').trim();
         if (!s) return '';
-        if (/^[a-z][a-z0-9+.-]*:/i.test(s) && !/^https?:/i.test(s)) return s;
         if (!/^https?:\/\//i.test(s)) s = 'https://' + s;
         return s;
     }
 
-    // ---- Build trang lưới HTML ----
-    function buildLauncherHtml(items, title, color) {
-        var itemsJs = JSON.stringify(items);
+    // ---- Build trang lưới HTML (nhúng vào data URI) ----
+    function buildLauncherHtml(webs, title, color, useIframe) {
+        var itemsJs = JSON.stringify(webs);
         return '<!DOCTYPE html>\n' +
 '<html lang="vi">\n' +
 '<head>\n' +
@@ -388,51 +312,60 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
 'h1{font-size:24px;text-align:center;margin-bottom:8px;background:linear-gradient(135deg,' + color + ',#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:900;}\n' +
 '.sub{text-align:center;font-size:12px;color:#888;margin-bottom:28px;}\n' +
 '.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:16px;max-width:600px;margin:0 auto;}\n' +
-'.tile{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:18px;padding:16px 8px;text-align:center;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:130px;position:relative;}\n' +
+'.tile{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:18px;padding:16px 8px;text-align:center;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:130px;}\n' +
 '.tile:active{transform:scale(0.95);background:rgba(255,255,255,0.1);}\n' +
 '.tile .icon{width:56px;height:56px;border-radius:14px;background:linear-gradient(135deg,' + color + ',#ec4899);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:900;color:#fff;margin-bottom:10px;box-shadow:0 4px 16px rgba(168,85,247,0.4);}\n' +
 '.tile .name{font-size:12px;font-weight:700;color:#fff;word-break:break-word;line-height:1.3;}\n' +
-'.tile.app .icon{background:linear-gradient(135deg,#22c55e,#16a34a);box-shadow:0 4px 16px rgba(34,197,94,0.4);}\n' +
-'.tile .badge{position:absolute;top:6px;right:6px;background:rgba(34,197,94,0.9);color:#fff;font-size:8px;padding:2px 5px;border-radius:6px;font-weight:800;letter-spacing:0.5px;}\n' +
+'#viewer{position:fixed;top:0;left:0;right:0;bottom:0;background:#000;display:none;z-index:999;}\n' +
+'#viewer iframe{width:100%;height:100%;border:none;background:#fff;}\n' +
+'#viewer .bar{position:absolute;top:0;left:0;right:0;height:44px;background:rgba(0,0,0,0.85);display:flex;align-items:center;padding:0 12px;z-index:1000;backdrop-filter:blur(10px);}\n' +
+'#viewer .bar button{background:rgba(255,255,255,0.15);border:none;color:#fff;padding:8px 14px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;margin-right:8px;}\n' +
+'#viewer .bar .title{flex:1;font-size:13px;font-weight:600;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}\n' +
+'#viewer.show{display:block;}\n' +
+'body.viewing #grid-view{display:none;}\n' +
 '</style>\n' +
 '</head>\n' +
 '<body>\n' +
 '<div id="grid-view">\n' +
 '<h1>' + escapeHtml(title) + '</h1>\n' +
-'<div class="sub">Bấm vào ô để mở</div>\n' +
+'<div class="sub">Bấm vào ô để mở web</div>\n' +
 '<div class="grid" id="grid"></div>\n' +
+'</div>\n' +
+'<div id="viewer">\n' +
+'<div class="bar"><button id="back-btn">← Quay lại</button><div class="title" id="viewer-title"></div></div>\n' +
+'<iframe id="viewer-frame" sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-top-navigation"></iframe>\n' +
 '</div>\n' +
 '<script>\n' +
 '(function(){\n' +
-'var items = ' + itemsJs + ';\n' +
+'var webs = ' + itemsJs + ';\n' +
+'var useIframe = ' + (useIframe ? 'true' : 'false') + ';\n' +
 'var grid = document.getElementById("grid");\n' +
-'\n' +
-'function navigateTo(url, newTab) {\n' +
-'  var a = document.createElement("a");\n' +
-'  a.href = url;\n' +
-'  a.target = newTab ? "_blank" : "_self";\n' +
-'  a.rel = "noopener noreferrer";\n' +
-'  document.body.appendChild(a);\n' +
-'  a.click();\n' +
-'  setTimeout(function(){ if (a.parentNode) a.parentNode.removeChild(a); }, 100);\n' +
-'}\n' +
-'\n' +
-'items.forEach(function(w){\n' +
+'var viewer = document.getElementById("viewer");\n' +
+'var frame = document.getElementById("viewer-frame");\n' +
+'var viewerTitle = document.getElementById("viewer-title");\n' +
+'webs.forEach(function(w){\n' +
 '  var t = document.createElement("div");\n' +
-'  t.className = "tile" + (w.type === "app" ? " app" : "");\n' +
+'  t.className = "tile";\n' +
 '  var letter = (w.name || "?").charAt(0).toUpperCase();\n' +
-'  t.innerHTML = \'<div class="icon">\' + letter + \'</div><div class="name">\' + escapeHtml(w.name) + \'</div>\' + (w.type === "app" ? \'<div class="badge">APP</div>\' : "");\n' +
+'  t.innerHTML = \'<div class="icon">\' + letter + \'</div><div class="name">\' + escapeHtml(w.name) + \'</div>\';\n' +
 '  t.onclick = function(){\n' +
-'    if (w.type === "app") {\n' +
-'      navigateTo(w.url, true);  // App: mở Safari\n' +
+'    if (useIframe) {\n' +
+'      viewerTitle.textContent = w.name;\n' +
+'      frame.src = w.url;\n' +
+'      viewer.classList.add("show");\n' +
+'      document.body.classList.add("viewing");\n' +
 '    } else {\n' +
-'      navigateTo(w.url, false); // Web: mở trong webview WebClip, không thanh Safari\n' +
+'      window.location.href = w.url;\n' +
 '    }\n' +
 '  };\n' +
 '  grid.appendChild(t);\n' +
 '});\n' +
-'\n' +
 'function escapeHtml(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/\'/g,"&#39;");}\n' +
+'document.getElementById("back-btn").onclick = function(){\n' +
+'  frame.src = "about:blank";\n' +
+'  viewer.classList.remove("show");\n' +
+'  document.body.classList.remove("viewing");\n' +
+'};\n' +
 '})();\n' +
 '<\/script>\n' +
 '</body>\n' +
@@ -440,20 +373,20 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
     }
 
     // ---- Build payload WebClip ----
-    function buildWebClipPayload(name, url, iconBase64, profileId) {
+    function buildWebClipPayload(name, url, iconUrl, profileId) {
         var uuid = generateUUID();
         var iconXml = '';
-        if (iconBase64) {
+        if (iconUrl && /^https?:\/\//i.test(iconUrl)) {
             iconXml =
                 '            <key>Icon</key>\n' +
-                '            <data>' + iconBase64 + '</data>\n';
+                '            <string>' + escapeXml(iconUrl) + '</string>\n';
         }
         return [
             '        <dict>',
             '            <key>FullScreen</key>',
             '            <true/>',
             '            <key>IgnoreManifestScope</key>',
-            '            <true/>',
+            '            <false/>',
             '            <key>IsRemovable</key>',
             '            <true/>',
             '            <key>Label</key>',
@@ -484,93 +417,87 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
     $('create-btn').onclick = function() {
         var btn = $('create-btn');
         btn.disabled = true;
-        setStatus('Đang xử lý...', 'loading');
+        setStatus('Đang tạo...', 'loading');
 
-        var rows = webListEl.querySelectorAll('.web-row');
-        var items = [];
-        for (var i = 0; i < rows.length; i++) {
-            var name = rows[i].querySelector('.name').value.trim();
-            var rawUrl = rows[i].querySelector('.url').value.trim();
-            var type = rows[i].querySelector('.type').value;
-            var url = normalizeUrl(rawUrl);
-            if (!url) continue;
-            if (!name) name = (type === 'app' ? 'App ' : 'Web ') + (items.length + 1);
-            items.push({ name: name, url: url, type: type });
-        }
+        setTimeout(function() {
+            try {
+                // Lấy danh sách web
+                var rows = webListEl.querySelectorAll('.web-row');
+                var webs = [];
+                for (var i = 0; i < rows.length; i++) {
+                    var name = rows[i].querySelector('.name').value.trim();
+                    var url = normalizeUrl(rows[i].querySelector('.url').value);
+                    if (!url) continue;
+                    if (!name) name = 'Web ' + (webs.length + 1);
+                    webs.push({ name: name, url: url });
+                }
 
-        if (items.length < 2) {
-            setStatus('Cần ít nhất 2 mục!', 'error');
-            btn.disabled = false;
-            return;
-        }
+                if (webs.length < 2) {
+                    setStatus('Cần ít nhất 2 web!', 'error');
+                    btn.disabled = false;
+                    return;
+                }
 
-        var appName = $('app-name').value.trim() || 'Multi Web';
-        var iconUrl = $('app-icon-url').value.trim();
-        var gridTitle = $('grid-title').value.trim() || 'Chọn để mở';
-        var color = $('theme-color').value;
-        var profileName = $('profile-name').value.trim() || 'Multi WebClip';
-        var profileId = $('profile-id').value.trim() || 'com.mduy.multiclip';
-        var noRemove = $('opt-noremove').checked;
+                var appName = $('app-name').value.trim() || 'Multi Web';
+                var iconUrl = $('app-icon-url').value.trim();
+                var gridTitle = $('grid-title').value.trim() || 'Chọn web để mở';
+                var color = $('theme-color').value;
+                var useIframe = $('opt-iframe').checked;
+                var profileName = $('profile-name').value.trim() || 'Multi WebClip';
+                var profileId = $('profile-id').value.trim() || 'com.mduy.multiclip';
+                var noRemove = $('opt-noremove').checked;
 
-        var iconPromise;
-        if (iconBase64) {
-            iconPromise = Promise.resolve();
-        } else if (iconUrl) {
-            iconPromise = fetchIconAsBase64(iconUrl).then(function(r) {
-                if (r) { iconBase64 = r.base64; iconMime = r.mime; }
-            }).catch(function(err) {
-                throw new Error('Không tải được icon từ link: ' + err.message + '. Hãy chọn ảnh từ máy.');
-            });
-        } else {
-            iconPromise = Promise.resolve();
-        }
+                if (iconUrl && !/^https?:\/\//i.test(iconUrl)) {
+                    setStatus('URL icon phải bắt đầu bằng http:// hoặc https://', 'error');
+                    btn.disabled = false;
+                    return;
+                }
 
-        iconPromise.then(function() {
-            var launcherHtml = buildLauncherHtml(items, gridTitle, color);
-            var base64Html = btoa(unescape(encodeURIComponent(launcherHtml)));
-            var dataUri = 'data:text/html;charset=utf-8;base64,' + base64Html;
+                // Build launcher HTML
+                var launcherHtml = buildLauncherHtml(webs, gridTitle, color, useIframe);
+                var base64Html = btoa(unescape(encodeURIComponent(launcherHtml)));
+                var dataUri = 'data:text/html;charset=utf-8;base64,' + base64Html;
 
-            var payload = buildWebClipPayload(appName, dataUri, iconBase64, profileId);
-            var noRemoveStr = noRemove ? 'true' : 'false';
+                // Build payload
+                var payload = buildWebClipPayload(appName, dataUri, iconUrl, profileId);
+                var noRemoveStr = noRemove ? 'true' : 'false';
 
-            var config =
+                var config =
 '<?xml version="1.0" encoding="UTF-8"?>\n' +
 '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n' +
 '<plist version="1.0">\n<dict>\n' +
 '    <key>PayloadContent</key>\n    <array>\n' +
 payload + '\n    </array>\n' +
-'    <key>PayloadDescription</key>\n    <string>Multi WebClip - ' + escapeXml(items.length + ' mục') + '</string>\n' +
+'    <key>PayloadDescription</key>\n    <string>Multi WebClip - ' + escapeXml(webs.length + ' web') + '</string>\n' +
 '    <key>PayloadDisplayName</key>\n    <string>' + escapeXml(profileName) + '</string>\n' +
 '    <key>PayloadIdentifier</key>\n    <string>' + escapeXml(profileId) + '</string>\n' +
 '    <key>PayloadOrganization</key>\n    <string>MDUY</string>\n' +
 '    <key>PayloadRemovalDisallowed</key>\n    <' + noRemoveStr + '/>\n' +
-'    <key>PayloadType</key>\n' +
-'    <string>Configuration</string>\n' +
-'    <key>PayloadUUID</key>\n' +
-'    <string>' + generateUUID() + '</string>\n' +
-'    <key>PayloadVersion</key>\n' +
-'    <integer>1</integer>\n' +
+'    <key>PayloadType</key>\n    <string>Configuration</string>\n' +
+'    <key>PayloadUUID</key>\n    <string>' + generateUUID() + '</string>\n' +
+'    <key>PayloadVersion</key>\n    <integer>1</integer>\n' +
 '</dict>\n</plist>';
 
-            if (configBlobUrl) URL.revokeObjectURL(configBlobUrl);
-            var blob = new Blob([config], { type: 'application/x-apple-aspen-config' });
-            configBlobUrl = URL.createObjectURL(blob);
+                if (configBlobUrl) URL.revokeObjectURL(configBlobUrl);
+                var blob = new Blob([config], { type: 'application/x-apple-aspen-config' });
+                configBlobUrl = URL.createObjectURL(blob);
 
-            var safeName = appName.replace(/[^a-z0-9\-_]/gi, '-').toLowerCase();
-            configFile = {
-                name: safeName + '-multi.mobileconfig',
-                blobUrl: configBlobUrl
-            };
+                var safeName = appName.replace(/[^a-z0-9\-_]/gi, '-').toLowerCase();
+                configFile = {
+                    name: safeName + '-multi.mobileconfig',
+                    blobUrl: configBlobUrl
+                };
 
-            $('download-row').style.display = 'grid';
-            $('guide-card').style.display = 'block';
-            setStatus('Đã tạo WebClip chứa ' + items.length + ' mục' + (iconBase64 ? ' + icon nhúng' : '') + '!', 'success');
-            btn.disabled = false;
-        }).catch(function(err) {
-            console.error(err);
-            setStatus('Lỗi: ' + err.message, 'error');
-            btn.disabled = false;
-        });
+                $('download-row').style.display = 'grid';
+                $('guide-card').style.display = 'block';
+                setStatus('Đã tạo WebClip chứa ' + webs.length + ' web!', 'success');
+                btn.disabled = false;
+            } catch (err) {
+                console.error(err);
+                setStatus('Lỗi: ' + err.message, 'error');
+                btn.disabled = false;
+            }
+        }, 80);
     };
 
     // ---- Install / Save ----
