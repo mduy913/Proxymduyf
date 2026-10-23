@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Multi-Web WebClip Builder</title>
+<title>Multi-Web WebClip Builder (tự tải icon)</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 body {
@@ -109,12 +109,6 @@ button.save-btn small { font-size: 9px; opacity: 0.8; font-weight: 600; }
     padding: 10px 12px; font-size: 11px; color: #fbbf24;
     line-height: 1.6; margin-top: 8px;
 }
-.warning-box {
-    background: rgba(239,68,68,0.1);
-    border: 1px solid rgba(239,68,68,0.4); border-radius: 10px;
-    padding: 10px 12px; font-size: 11px; color: #fca5a5;
-    line-height: 1.6; margin-top: 8px;
-}
 .switch-row {
     display: flex; justify-content: space-between; align-items: center;
     padding: 10px 12px; background: rgba(0,0,0,0.3); border-radius: 9px;
@@ -137,20 +131,23 @@ input:checked + .slider-sw { background-color: rgba(34,197,94,0.3); border-color
 input:checked + .slider-sw:before { transform: translateX(20px); background-color: #22c55e; box-shadow: 0 0 10px #22c55e; }
 .guide { font-size: 12px; line-height: 1.8; color: #ddd; }
 .guide code { background: rgba(168,85,247,0.2); padding: 2px 6px; border-radius: 4px; font-size: 11px; color: #d0b0ff; }
+.icon-preview-box {
+    width: 64px; height: 64px; border-radius: 14px;
+    background: rgba(0,0,0,0.4); border: 1px dashed rgba(168,85,247,0.4);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; color: #666; margin-top: 6px; overflow: hidden;
+}
+.icon-preview-box img { width: 100%; height: 100%; object-fit: cover; }
 </style>
 </head>
 <body>
 
 <div class="container">
     <h1>MULTI-WEB WEBCLIP</h1>
-    <div class="subtitle">1 WebClip chứa nhiều web — mở ra lưới ô vuông, bấm ô nào mở web đó</div>
+    <div class="subtitle">1 WebClip chứa nhiều web — icon tự tải từ link</div>
 
     <div class="hint">
-        <b>Cách dùng:</b><br>
-        1. Nhập tên app (hiện dưới icon)<br>
-        2. Thêm các web: tên + URL<br>
-        3. Nhấn TẠO → cài WebClip<br>
-        4. Mở WebClip → hiện lưới ô vuông → bấm ô nào mở web đó
+        <b>Mới:</b> Bạn chỉ cần dán <b>link ảnh</b> (https://...), tool sẽ tự tải về và nhúng vào config. Không cần Base64 thủ công.
     </div>
 
     <!-- ============ CẤU HÌNH CHUNG ============ -->
@@ -161,8 +158,13 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
             <input type="text" id="app-name" placeholder="VD: SORA" value="SORA" maxlength="20">
         </div>
         <div class="field">
-            <label>URL ảnh icon ngoài màn hình chính (https — để trống dùng mặc định iOS)</label>
-            <input type="text" id="app-icon-url" placeholder="https://i.imgur.com/xxxxx.png">
+            <label>Link ảnh icon (https — tool sẽ tự tải về)</label>
+            <input type="text" id="app-icon-url" placeholder="https://cdn.upanhlaylink.com/i/xxxxx.jpeg">
+            <div class="icon-preview-box" id="icon-preview">?</div>
+        </div>
+        <div class="field">
+            <label>Hoặc chọn ảnh từ máy (nếu link bị chặn CORS)</label>
+            <input type="file" id="icon-file" accept="image/*">
         </div>
         <div class="field">
             <label>Tiêu đề hiện trên trang lưới</label>
@@ -196,10 +198,6 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
         <div class="label">DANH SÁCH WEB (2 web trở lên)</div>
         <div id="web-list"></div>
         <button class="add-btn" id="add-web">+ Thêm web</button>
-        <div class="notice-box">
-            <b>Tên</b> hiện trên ô vuông. <b>URL</b> là link web thực tế.<br>
-            Nếu không ghi <code>https://</code>, tool tự thêm.
-        </div>
     </div>
 
     <!-- ============ PROFILE ============ -->
@@ -245,7 +243,7 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
         <div class="guide">
             <b>Cài:</b> Nhấn CÀI NGAY (hoặc LƯU TỆP rồi mở trong Files) → Settings → Đã tải Profile → Cài đặt → nhập mật khẩu → Cài.<br>
             <b>Dùng:</b> Mở WebClip → hiện lưới ô vuông → bấm ô web muốn mở.<br>
-            <b>Thoát:</b> Nếu đang trong iframe, bấm nút "← Quay lại" ở góc trên.
+            <b>Thoát:</b> Nếu đang trong iframe, bấm "← Quay lại" ở góc trên.
         </div>
     </div>
 </div>
@@ -257,6 +255,93 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
     var $ = function(id) { return document.getElementById(id); };
     var configFile = null;
     var configBlobUrl = null;
+    var iconBase64 = null;   // base64 không có tiền tố data:
+    var iconMime = null;
+
+    // ---- Icon preview ----
+    var previewEl = $('icon-preview');
+    function showPreview(src) {
+        previewEl.innerHTML = '<img src="' + src + '" onerror="this.parentNode.innerHTML=\'?\'">';
+    }
+
+    // Tải ảnh từ URL -> base64
+    function fetchIconAsBase64(url) {
+        return new Promise(function(resolve, reject) {
+            if (!url) { resolve(null); return; }
+            if (!/^https?:\/\//i.test(url)) { reject(new Error('Link ảnh phải bắt đầu bằng http/https')); return; }
+            fetch(url, { mode: 'cors' })
+                .then(function(res) {
+                    if (!res.ok) throw new Error('Không tải được ảnh (HTTP ' + res.status + ')');
+                    var ct = res.headers.get('content-type') || '';
+                    if (ct.indexOf('image/') !== 0) throw new Error('Link không phải ảnh (content-type: ' + ct + ')');
+                    return res.blob();
+                })
+                .then(function(blob) {
+                    if (blob.size > 1024 * 1024) throw new Error('Ảnh quá 1MB, iOS sẽ từ chối');
+                    var reader = new FileReader();
+                    reader.onload = function() {
+                        var dataUrl = reader.result;
+                        var comma = dataUrl.indexOf(',');
+                        var meta = dataUrl.substring(5, comma);  // image/jpeg;base64
+                        var mime = meta.split(';')[0];
+                        var b64 = dataUrl.substring(comma + 1);
+                        resolve({ base64: b64, mime: mime, dataUrl: dataUrl });
+                    };
+                    reader.onerror = function() { reject(new Error('Lỗi đọc file ảnh')); };
+                    reader.readAsDataURL(blob);
+                })
+                .catch(function(err) {
+                    if (err.name === 'TypeError') {
+                        reject(new Error('Không tải được ảnh — có thể bị chặn CORS. Hãy chọn ảnh từ máy.'));
+                    } else {
+                        reject(err);
+                    }
+                });
+        });
+    }
+
+    // Khi nhập link -> tự thử tải và preview
+    var iconUrlInput = $('app-icon-url');
+    var fetchTimer = null;
+    iconUrlInput.addEventListener('input', function() {
+        var url = this.value.trim();
+        iconBase64 = null; iconMime = null;
+        if (!url) { previewEl.innerHTML = '?'; return; }
+        if (fetchTimer) clearTimeout(fetchTimer);
+        fetchTimer = setTimeout(function() {
+            previewEl.innerHTML = '...';
+            fetchIconAsBase64(url).then(function(r) {
+                if (r) {
+                    iconBase64 = r.base64; iconMime = r.mime;
+                    showPreview(r.dataUrl);
+                }
+            }).catch(function(err) {
+                previewEl.innerHTML = '!';
+            });
+        }, 500);
+    });
+
+    // Chọn ảnh từ máy
+    $('icon-file').addEventListener('change', function() {
+        var file = this.files && this.files[0];
+        if (!file) return;
+        if (file.size > 1024 * 1024) {
+            setStatus('Ảnh quá 1MB, iOS sẽ từ chối', 'error');
+            return;
+        }
+        var reader = new FileReader();
+        reader.onload = function() {
+            var dataUrl = reader.result;
+            var comma = dataUrl.indexOf(',');
+            var meta = dataUrl.substring(5, comma);
+            var mime = meta.split(';')[0];
+            var b64 = dataUrl.substring(comma + 1);
+            iconBase64 = b64; iconMime = mime;
+            showPreview(dataUrl);
+            setStatus('Đã chọn ảnh từ máy', 'success');
+        };
+        reader.readAsDataURL(file);
+    });
 
     // ---- Web list ----
     var webListEl = $('web-list');
@@ -278,11 +363,8 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
         webListEl.appendChild(row);
     }
 
-    $('add-web').onclick = function() {
-        addWebRow('', '');
-    };
+    $('add-web').onclick = function() { addWebRow('', ''); };
 
-    // Khởi tạo 2 dòng mặc định
     addWebRow('Web 1', 'https://pqjqqo.com');
     addWebRow('Web 2', 'https://client.trollmodz.store');
 
@@ -373,13 +455,14 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
     }
 
     // ---- Build payload WebClip ----
-    function buildWebClipPayload(name, url, iconUrl, profileId) {
+    function buildWebClipPayload(name, url, iconBase64, profileId) {
         var uuid = generateUUID();
         var iconXml = '';
-        if (iconUrl && /^https?:\/\//i.test(iconUrl)) {
+        // iOS yêu cầu trường Icon là <data> base64, KHÔNG phải URL
+        if (iconBase64) {
             iconXml =
                 '            <key>Icon</key>\n' +
-                '            <string>' + escapeXml(iconUrl) + '</string>\n';
+                '            <data>' + iconBase64 + '</data>\n';
         }
         return [
             '        <dict>',
@@ -417,52 +500,56 @@ input:checked + .slider-sw:before { transform: translateX(20px); background-colo
     $('create-btn').onclick = function() {
         var btn = $('create-btn');
         btn.disabled = true;
-        setStatus('Đang tạo...', 'loading');
+        setStatus('Đang xử lý...', 'loading');
 
-        setTimeout(function() {
-            try {
-                // Lấy danh sách web
-                var rows = webListEl.querySelectorAll('.web-row');
-                var webs = [];
-                for (var i = 0; i < rows.length; i++) {
-                    var name = rows[i].querySelector('.name').value.trim();
-                    var url = normalizeUrl(rows[i].querySelector('.url').value);
-                    if (!url) continue;
-                    if (!name) name = 'Web ' + (webs.length + 1);
-                    webs.push({ name: name, url: url });
-                }
+        var rows = webListEl.querySelectorAll('.web-row');
+        var webs = [];
+        for (var i = 0; i < rows.length; i++) {
+            var name = rows[i].querySelector('.name').value.trim();
+            var url = normalizeUrl(rows[i].querySelector('.url').value);
+            if (!url) continue;
+            if (!name) name = 'Web ' + (webs.length + 1);
+            webs.push({ name: name, url: url });
+        }
 
-                if (webs.length < 2) {
-                    setStatus('Cần ít nhất 2 web!', 'error');
-                    btn.disabled = false;
-                    return;
-                }
+        if (webs.length < 2) {
+            setStatus('Cần ít nhất 2 web!', 'error');
+            btn.disabled = false;
+            return;
+        }
 
-                var appName = $('app-name').value.trim() || 'Multi Web';
-                var iconUrl = $('app-icon-url').value.trim();
-                var gridTitle = $('grid-title').value.trim() || 'Chọn web để mở';
-                var color = $('theme-color').value;
-                var useIframe = $('opt-iframe').checked;
-                var profileName = $('profile-name').value.trim() || 'Multi WebClip';
-                var profileId = $('profile-id').value.trim() || 'com.mduy.multiclip';
-                var noRemove = $('opt-noremove').checked;
+        var appName = $('app-name').value.trim() || 'Multi Web';
+        var iconUrl = $('app-icon-url').value.trim();
+        var gridTitle = $('grid-title').value.trim() || 'Chọn web để mở';
+        var color = $('theme-color').value;
+        var useIframe = $('opt-iframe').checked;
+        var profileName = $('profile-name').value.trim() || 'Multi WebClip';
+        var profileId = $('profile-id').value.trim() || 'com.mduy.multiclip';
+        var noRemove = $('opt-noremove').checked;
 
-                if (iconUrl && !/^https?:\/\//i.test(iconUrl)) {
-                    setStatus('URL icon phải bắt đầu bằng http:// hoặc https://', 'error');
-                    btn.disabled = false;
-                    return;
-                }
+        // Nếu đã có ảnh từ file, dùng luôn. Nếu chưa và có link, thử tải.
+        var iconPromise;
+        if (iconBase64) {
+            iconPromise = Promise.resolve();
+        } else if (iconUrl) {
+            iconPromise = fetchIconAsBase64(iconUrl).then(function(r) {
+                if (r) { iconBase64 = r.base64; iconMime = r.mime; }
+            }).catch(function(err) {
+                throw new Error('Không tải được icon từ link: ' + err.message + '. Hãy chọn ảnh từ máy.');
+            });
+        } else {
+            iconPromise = Promise.resolve();
+        }
 
-                // Build launcher HTML
-                var launcherHtml = buildLauncherHtml(webs, gridTitle, color, useIframe);
-                var base64Html = btoa(unescape(encodeURIComponent(launcherHtml)));
-                var dataUri = 'data:text/html;charset=utf-8;base64,' + base64Html;
+        iconPromise.then(function() {
+            var launcherHtml = buildLauncherHtml(webs, gridTitle, color, useIframe);
+            var base64Html = btoa(unescape(encodeURIComponent(launcherHtml)));
+            var dataUri = 'data:text/html;charset=utf-8;base64,' + base64Html;
 
-                // Build payload
-                var payload = buildWebClipPayload(appName, dataUri, iconUrl, profileId);
-                var noRemoveStr = noRemove ? 'true' : 'false';
+            var payload = buildWebClipPayload(appName, dataUri, iconBase64, profileId);
+            var noRemoveStr = noRemove ? 'true' : 'false';
 
-                var config =
+            var config =
 '<?xml version="1.0" encoding="UTF-8"?>\n' +
 '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n' +
 '<plist version="1.0">\n<dict>\n' +
@@ -478,26 +565,25 @@ payload + '\n    </array>\n' +
 '    <key>PayloadVersion</key>\n    <integer>1</integer>\n' +
 '</dict>\n</plist>';
 
-                if (configBlobUrl) URL.revokeObjectURL(configBlobUrl);
-                var blob = new Blob([config], { type: 'application/x-apple-aspen-config' });
-                configBlobUrl = URL.createObjectURL(blob);
+            if (configBlobUrl) URL.revokeObjectURL(configBlobUrl);
+            var blob = new Blob([config], { type: 'application/x-apple-aspen-config' });
+            configBlobUrl = URL.createObjectURL(blob);
 
-                var safeName = appName.replace(/[^a-z0-9\-_]/gi, '-').toLowerCase();
-                configFile = {
-                    name: safeName + '-multi.mobileconfig',
-                    blobUrl: configBlobUrl
-                };
+            var safeName = appName.replace(/[^a-z0-9\-_]/gi, '-').toLowerCase();
+            configFile = {
+                name: safeName + '-multi.mobileconfig',
+                blobUrl: configBlobUrl
+            };
 
-                $('download-row').style.display = 'grid';
-                $('guide-card').style.display = 'block';
-                setStatus('Đã tạo WebClip chứa ' + webs.length + ' web!', 'success');
-                btn.disabled = false;
-            } catch (err) {
-                console.error(err);
-                setStatus('Lỗi: ' + err.message, 'error');
-                btn.disabled = false;
-            }
-        }, 80);
+            $('download-row').style.display = 'grid';
+            $('guide-card').style.display = 'block';
+            setStatus('Đã tạo WebClip chứa ' + webs.length + ' web' + (iconBase64 ? ' + icon nhúng' : '') + '!', 'success');
+            btn.disabled = false;
+        }).catch(function(err) {
+            console.error(err);
+            setStatus('Lỗi: ' + err.message, 'error');
+            btn.disabled = false;
+        });
     };
 
     // ---- Install / Save ----
