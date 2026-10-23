@@ -45,6 +45,9 @@ h1 {
     resize: vertical; min-height: 120px; line-height: 1.6;
     font-family: 'Courier New', monospace; font-size: 12px;
 }
+.field textarea.desc-area {
+    font-family: inherit; font-size: 13px; min-height: 80px;
+}
 .field input:focus, .field textarea:focus { border-color: #a855f7; box-shadow: 0 0 15px rgba(168,85,247,0.3); }
 .count-row { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 6px; }
 .count-btn {
@@ -169,11 +172,10 @@ button.userscript-btn small { font-size: 9px; opacity: 0.8; font-weight: 600; }
 
 <div class="container">
     <h1>WEBCLIP + USERSCRIPT</h1>
-    <div class="subtitle">Dán link web → tạo WebClip + UserScript — icon tự tải Base64</div>
+    <div class="subtitle">Dán link web → tạo WebClip + UserScript — mô tả dài tùy ý</div>
 
     <div class="hint">
-        <b>Mới:</b> Icon tự tải từ link → chuyển Base64 → nhúng vào config. Không còn lỗi icon.<br>
-        Nếu link ảnh bị chặn CORS, dùng ô "Chọn ảnh từ máy".
+        <b>Mới:</b> Ô mô tả Profile giờ là <b>textarea</b> — nhập dài bao nhiêu cũng được, xuống dòng thoải mái, hiển thị đầy đủ trong phần cài đặt iOS.
     </div>
 
     <!-- ============ LINK WEB ============ -->
@@ -260,8 +262,13 @@ button.userscript-btn small { font-size: 9px; opacity: 0.8; font-weight: 600; }
             <input type="text" id="profile-name" value="WebClip của tôi" maxlength="40">
         </div>
         <div class="field">
-            <label>Mô tả Profile</label>
-            <input type="text" id="profile-desc" value="WebClip tạo bởi MDUY" maxlength="80">
+            <label>Mô tả Profile (nhập dài tùy ý, có thể xuống dòng)</label>
+            <textarea id="profile-desc" class="desc-area" placeholder="Nhập mô tả chi tiết về WebClip này...">WebClip tạo bởi MDUY
+
+Hướng dẫn:
+- Mở icon ngoài Home Screen để vào web
+- Cài UserScript qua Stay/Userscripts để chạy script
+- Liên hệ: https://t.me/mduyk_bot</textarea>
         </div>
         <div class="field">
             <label>Tên miền (Identifier)</label>
@@ -525,7 +532,6 @@ button.userscript-btn small { font-size: 9px; opacity: 0.8; font-weight: 600; }
         var noRemove = $('opt-noremove').checked;
         var userScript = $('userscript-code').value.trim();
 
-        // Ưu tiên iconBase64 đã có (từ file máy hoặc từ fetch trước đó)
         var iconPromise;
         if (iconBase64) {
             iconPromise = Promise.resolve();
@@ -652,6 +658,7 @@ allPayloads + '\n    </array>\n' +
         });
     }
 
+    // Giữ nguyên \n trong XML <string> — iOS sẽ hiển thị đúng
     function escapeXml(str) {
         return String(str)
             .replace(/&/g, '&amp;')
@@ -662,7 +669,7 @@ allPayloads + '\n    </array>\n' +
     }
 
     updateEstimate();
-    console.log('WebClip + UserScript Builder (Base64 icon) ready');
+    console.log('WebClip + UserScript Builder (Base64 icon + long desc) ready');
 })();
 </script>
 
