@@ -24,6 +24,7 @@ h1 { text-align: center; font-size: 22px; margin-bottom: 6px; background: linear
 .field input, .field textarea, .field select { width: 100%; background: rgba(0,0,0,0.4); border: 1px solid rgba(168,85,247,0.3); border-radius: 9px; color: #fff; padding: 10px 12px; font-size: 13px; font-family: inherit; outline: none; transition: 0.2s; }
 .field textarea { resize: vertical; min-height: 100px; line-height: 1.6; font-family: 'Courier New', monospace; font-size: 12px; }
 .field input:focus, .field textarea:focus, .field select:focus { border-color: #a855f7; box-shadow: 0 0 15px rgba(168,85,247,0.3); }
+.field textarea.desc-area { font-family: inherit; font-size: 13px; min-height: 80px; }
 
 .web-row { display: flex; gap: 6px; margin-bottom: 6px; align-items: center; }
 .web-row input.name { flex: 0 0 70px; }
@@ -68,10 +69,10 @@ button small { font-size: 9px; opacity: 0.8; font-weight: 600; }
 
 <div class="container">
     <h1>WEBCLIP MASTER PRO</h1>
-    <div class="subtitle">Có nút Quay Lại + Fix Lag tối ưu cho iOS</div>
+    <div class="subtitle">Full tính năng: Ẩn URL, Nút Back, Fix Lag, Mô tả dài</div>
 
     <div class="hint">
-        <b>Đã nâng cấp:</b> Thêm thanh điều hướng nổi (có nút Back) và tối ưu hóa animation GPU giúp chuyển trang mượt mà, không bị lag.
+        <b>Đã bổ sung:</b> Mô tả Profile không giới hạn chữ (textarea), hiển thị đầy đủ trong phần Cài đặt iOS.
     </div>
 
     <!-- CẤU HÌNH WEBCLIP -->
@@ -126,6 +127,24 @@ button small { font-size: 9px; opacity: 0.8; font-weight: 600; }
         <div class="notice-box">
             <b>Web</b>: mở trong WebClip (có nút Back).<br>
             <b>App</b>: mở Safari (dành cho Telegram, Zalo...).
+        </div>
+    </div>
+
+    <!-- MÔ TẢ PROFILE (MỚI) -->
+    <div class="card">
+        <div class="label">THÔNG TIN PROFILE</div>
+        <div class="field">
+            <label>Tên Profile</label>
+            <input type="text" id="profile-name" value="WebClip của tôi" maxlength="40">
+        </div>
+        <div class="field">
+            <label>Mô tả Profile (nhập dài tùy ý, có thể xuống dòng)</label>
+            <textarea id="profile-desc" class="desc-area" placeholder="Nhập mô tả chi tiết về WebClip này...">WebClip tạo bởi MDUY
+
+Hướng dẫn sử dụng:
+- Mở icon ngoài Home Screen để vào web
+- Bấm nút "← Quay lại" để về màn hình lưới
+- Liên hệ hỗ trợ: https://t.me/mduyk_bot</textarea>
         </div>
     </div>
 
@@ -230,7 +249,7 @@ button small { font-size: 9px; opacity: 0.8; font-weight: 600; }
     addWebRow('Web 1', 'https://ph4nt0m.lol', 'web');
     addWebRow('Telegram', 'https://t.me/mduyk_bot', 'app');
 
-    // --- Tạo HTML Lưới (Có nút Back + Tối ưu Lag) ---
+    // --- Tạo HTML Lưới (Có nút Back + Fix Lag) ---
     function buildLauncherHtml(items, title) {
         var itemsJson = JSON.stringify(items);
         return '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>'+title+'</title>' +
@@ -277,8 +296,8 @@ button small { font-size: 9px; opacity: 0.8; font-weight: 600; }
         '<\/script></body></html>';
     }
 
-    // --- Tạo Payload WebClip ---
-    function buildPayload(name, url, base64, baseId, index) {
+    // --- Tạo Payload WebClip (Có Mô tả riêng) ---
+    function buildPayload(name, url, base64, baseId, index, desc) {
         var uuid = generateUUID();
         var iconXml = base64 ? '            <key>Icon</key>\n            <data>'+base64+'</data>\n' : '';
         return [
@@ -294,7 +313,7 @@ button small { font-size: 9px; opacity: 0.8; font-weight: 600; }
             '            <key>Precomposed</key>',
             '            <true/>',
             '            <key>PayloadDescription</key>',
-            '            <string>' + esc(name) + '</string>',
+            '            <string>' + esc(desc) + '</string>', // Mô tả chi tiết
             '            <key>PayloadDisplayName</key>',
             '            <string>' + esc(name) + '</string>',
             '            <key>PayloadIdentifier</key>',
@@ -334,6 +353,9 @@ button small { font-size: 9px; opacity: 0.8; font-weight: 600; }
         var gridTitle = $('grid-title').value.trim() || 'Chọn để mở';
         var hideUrl = $('opt-hide-url').checked;
         var userScript = $('userscript-code').value.trim();
+        
+        // Lấy mô tả
+        var profileDesc = $('profile-desc').value.trim() || 'WebClip tạo bởi MDUY';
 
         var launcherHtml = buildLauncherHtml(items, gridTitle);
         var base64Html = btoa(unescape(encodeURIComponent(launcherHtml)));
@@ -346,11 +368,11 @@ button small { font-size: 9px; opacity: 0.8; font-weight: 600; }
         
         for (var i = 0; i < currentCount; i++) {
             var displayName = currentCount > 1 ? (appName + ' ' + (i + 1)) : appName;
-            payloads.push(buildPayload(displayName, finalUrl, iconBase64, masterId, i));
+            payloads.push(buildPayload(displayName, finalUrl, iconBase64, masterId, i, profileDesc));
         }
 
         var config = '<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n<plist version="1.0">\n<dict>\n    <key>PayloadContent</key>\n    <array>\n' +
-        payloads.join('\n') + '\n    </array>\n    <key>PayloadDescription</key>\n    <string>WebClip Master</string>\n    <key>PayloadDisplayName</key>\n    <string>' + esc(appName) + '</string>\n    <key>PayloadIdentifier</key>\n    <string>' + masterId + '</string>\n    <key>PayloadOrganization</key>\n    <string>MDUY</string>\n    <key>PayloadType</key>\n    <string>Configuration</string>\n    <key>PayloadUUID</key>\n    <string>' + generateUUID() + '</string>\n    <key>PayloadVersion</key>\n    <integer>1</integer>\n</dict>\n</plist>';
+        payloads.join('\n') + '\n    </array>\n    <key>PayloadDescription</key>\n    <string>' + esc(profileDesc) + '</string>\n    <key>PayloadDisplayName</key>\n    <string>' + esc(appName) + '</string>\n    <key>PayloadIdentifier</key>\n    <string>' + masterId + '</string>\n    <key>PayloadOrganization</key>\n    <string>MDUY</string>\n    <key>PayloadType</key>\n    <string>Configuration</string>\n    <key>PayloadUUID</key>\n    <string>' + generateUUID() + '</string>\n    <key>PayloadVersion</key>\n    <integer>1</integer>\n</dict>\n</plist>';
 
         if (configBlobUrl) URL.revokeObjectURL(configBlobUrl);
         configBlobUrl = URL.createObjectURL(new Blob([config], { type: 'application/x-apple-aspen-config' }));
@@ -375,7 +397,7 @@ button small { font-size: 9px; opacity: 0.8; font-weight: 600; }
         var a = document.createElement('a'); a.href = url; a.download = name;
         document.body.appendChild(a); a.click(); document.body.removeChild(a);
     }
-    function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+    function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/\n/g, '&#10;'); }
 })();
 </script>
 </body>
