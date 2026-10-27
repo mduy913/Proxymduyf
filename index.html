@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>WebClip Master Pro</title>
+<title>WebClip Master Builder (Multi-Instance)</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 body {
@@ -24,7 +24,6 @@ h1 { text-align: center; font-size: 22px; margin-bottom: 6px; background: linear
 .field input, .field textarea, .field select { width: 100%; background: rgba(0,0,0,0.4); border: 1px solid rgba(168,85,247,0.3); border-radius: 9px; color: #fff; padding: 10px 12px; font-size: 13px; font-family: inherit; outline: none; transition: 0.2s; }
 .field textarea { resize: vertical; min-height: 100px; line-height: 1.6; font-family: 'Courier New', monospace; font-size: 12px; }
 .field input:focus, .field textarea:focus, .field select:focus { border-color: #a855f7; box-shadow: 0 0 15px rgba(168,85,247,0.3); }
-.field textarea.desc-area { font-family: inherit; font-size: 13px; min-height: 80px; }
 
 .web-row { display: flex; gap: 6px; margin-bottom: 6px; align-items: center; }
 .web-row input.name { flex: 0 0 70px; }
@@ -50,10 +49,9 @@ input:checked + .slider:before { transform: translateX(20px); background-color: 
 button.main-btn { width: 100%; padding: 16px; background: linear-gradient(135deg, #a855f7, #ec4899); border: none; border-radius: 12px; color: #fff; font-weight: 800; font-size: 14px; cursor: pointer; margin-top: 8px; }
 button.main-btn:disabled { opacity: 0.5; }
 .download-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
-button.install-btn, button.save-btn, button.userscript-btn { padding: 16px 8px; border: none; border-radius: 12px; color: #fff; font-weight: 800; font-size: 13px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+button.install-btn, button.save-btn { padding: 16px 8px; border: none; border-radius: 12px; color: #fff; font-weight: 800; font-size: 13px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
 button.install-btn { background: linear-gradient(135deg, #22c55e, #16a34a); }
 button.save-btn { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
-button.userscript-btn { width: 100%; background: linear-gradient(135deg, #f59e0b, #d97706); margin-top: 8px; }
 button small { font-size: 9px; opacity: 0.8; font-weight: 600; }
 
 .status { font-size: 12px; text-align: center; padding: 12px; color: #22c55e; background: rgba(0,0,0,0.3); border-radius: 10px; margin-top: 12px; }
@@ -68,11 +66,11 @@ button small { font-size: 9px; opacity: 0.8; font-weight: 600; }
 <body>
 
 <div class="container">
-    <h1>WEBCLIP MASTER PRO</h1>
-    <div class="subtitle">Full tính năng: Ẩn URL, Nút Back, Fix Lag, Mô tả dài</div>
+    <h1>WEBCLIP MASTER</h1>
+    <div class="subtitle">Fix lỗi xung đột khi cài nhiều WebClip cùng lúc</div>
 
     <div class="hint">
-        <b>Đã bổ sung:</b> Mô tả Profile không giới hạn chữ (textarea), hiển thị đầy đủ trong phần Cài đặt iOS.
+        <b>Đã fix:</b> Mỗi WebClip tự động có mã UUID và Identifier riêng biệt. Bạn có thể chọn tạo 2, 5, 10 icon cùng lúc mà không bị đè hay lỗi.
     </div>
 
     <!-- CẤU HÌNH WEBCLIP -->
@@ -81,6 +79,10 @@ button small { font-size: 9px; opacity: 0.8; font-weight: 600; }
         <div class="field">
             <label>Tên app (hiện dưới icon)</label>
             <input type="text" id="app-name" placeholder="VD: MDUY iOS" value="MDUY iOS" maxlength="20">
+        </div>
+        <div class="field">
+            <label>Mô tả (không giới hạn chữ)</label>
+            <textarea id="app-desc" placeholder="Nhập mô tả cho WebClip..."></textarea>
         </div>
         <div class="field">
             <label>Link ảnh icon (https)</label>
@@ -125,35 +127,8 @@ button small { font-size: 9px; opacity: 0.8; font-weight: 600; }
         <div id="web-list"></div>
         <button class="add-btn" id="add-web">+ Thêm mục</button>
         <div class="notice-box">
-            <b>Web</b>: mở trong WebClip (có nút Back).<br>
-            <b>App</b>: mở Safari (dành cho Telegram, Zalo...).
-        </div>
-    </div>
-
-    <!-- MÔ TẢ PROFILE (MỚI) -->
-    <div class="card">
-        <div class="label">THÔNG TIN PROFILE</div>
-        <div class="field">
-            <label>Tên Profile</label>
-            <input type="text" id="profile-name" value="WebClip của tôi" maxlength="40">
-        </div>
-        <div class="field">
-            <label>Mô tả Profile (nhập dài tùy ý, có thể xuống dòng)</label>
-            <textarea id="profile-desc" class="desc-area" placeholder="Nhập mô tả chi tiết về WebClip này...">WebClip tạo bởi MDUY
-
-Hướng dẫn sử dụng:
-- Mở icon ngoài Home Screen để vào web
-- Bấm nút "← Quay lại" để về màn hình lưới
-- Liên hệ hỗ trợ: https://t.me/mduyk_bot</textarea>
-        </div>
-    </div>
-
-    <!-- USERSCRIPT -->
-    <div class="card">
-        <div class="label">USERSCRIPT (Tùy chọn)</div>
-        <div class="field">
-            <label>Code UserScript (để trống nếu không dùng)</label>
-            <textarea id="userscript-code" placeholder="Dán code .user.js vào đây..."></textarea>
+            <b>Web</b>: mở trong WebClip (không thanh Safari).<br>
+            <b>App</b>: mở Safari (dành cho link Telegram, Zalo...).
         </div>
     </div>
 
@@ -164,16 +139,16 @@ Hướng dẫn sử dụng:
         <button class="install-btn" id="install-btn">CÀI NGAY<small>Mở cài đặt</small></button>
         <button class="save-btn" id="save-btn">LƯU TỆP<small>Tải .mobileconfig</small></button>
     </div>
-    <button class="userscript-btn" id="userscript-btn" style="display:none;">TẢI USERSCRIPT<small>Import vào Stay</small></button>
 </div>
 
 <script>
 (function() {
     'use strict';
     var $ = function(id) { return document.getElementById(id); };
-    var configFile = null, configBlobUrl = null, userScriptBlobUrl = null;
+    var configFile = null, configBlobUrl = null;
     var iconBase64 = null, currentCount = 1;
 
+    // --- Hàm tạo UUID ngẫu nhiên ---
     function generateUUID() {
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
             var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
@@ -249,57 +224,30 @@ Hướng dẫn sử dụng:
     addWebRow('Web 1', 'https://ph4nt0m.lol', 'web');
     addWebRow('Telegram', 'https://t.me/mduyk_bot', 'app');
 
-    // --- Tạo HTML Lưới (Có nút Back + Fix Lag) ---
+    // --- Tạo HTML Lưới ---
     function buildLauncherHtml(items, title) {
         var itemsJson = JSON.stringify(items);
         return '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>'+title+'</title>' +
-        '<style>' +
-        '*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}' +
-        'body{font-family:-apple-system,sans-serif;background:#0a0a1a;color:#fff;min-height:100vh;overflow:hidden;}' +
-        '#grid-view{position:absolute;top:0;left:0;width:100%;height:100%;padding:24px 16px;overflow-y:auto;will-change:transform;transition:transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);z-index:10;}' +
-        'h1{font-size:24px;text-align:center;margin-bottom:28px;color:#a855f7;font-weight:900;}' +
-        '.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:16px;max-width:600px;margin:0 auto;}' +
+        '<style>*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}body{font-family:-apple-system,sans-serif;background:#0a0a1a;color:#fff;min-height:100vh;padding:24px 16px;}' +
+        'h1{font-size:24px;text-align:center;margin-bottom:28px;color:#a855f7;font-weight:900;}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:16px;max-width:600px;margin:0 auto;}' +
         '.tile{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:18px;padding:16px 8px;text-align:center;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:130px;position:relative;}' +
-        '.tile:active{transform:scale(0.95);background:rgba(255,255,255,0.1);}' +
-        '.tile .icon{width:56px;height:56px;border-radius:14px;background:linear-gradient(135deg,#a855f7,#ec4899);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:900;color:#fff;margin-bottom:10px;}' +
-        '.tile.app .icon{background:linear-gradient(135deg,#22c55e,#16a34a);}' +
-        '.tile .name{font-size:12px;font-weight:700;color:#fff;word-break:break-word;line-height:1.3;}' +
-        '.badge{position:absolute;top:6px;right:6px;background:#22c55e;color:#fff;font-size:8px;padding:2px 5px;border-radius:6px;font-weight:800;}' +
-        '#web-view{position:absolute;top:0;left:0;width:100%;height:100%;background:#fff;transform:translateX(100%);transition:transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);will-change:transform;z-index:20;display:flex;flex-direction:column;}' +
-        '#toolbar{height:50px;background:#0a0a1a;display:flex;align-items:center;padding:0 16px;flex-shrink:0;}' +
-        '#back-btn{background:rgba(255,255,255,0.1);border:none;color:#fff;padding:8px 16px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;}' +
-        '#toolbar-title{color:#fff;font-size:14px;font-weight:600;margin-left:16px;flex:1;text-align:center;padding-right:60px;}' +
-        '#web-frame{flex:1;width:100%;border:none;background:#fff;}' +
-        'body.viewing #grid-view{transform:translateX(-30%);opacity:0.5;}' +
-        'body.viewing #web-view{transform:translateX(0);}' +
-        '</style></head><body>' +
-        '<div id="grid-view"><h1>'+title+'</h1><div class="grid" id="grid"></div></div>' +
-        '<div id="web-view">' +
-        '<div id="toolbar"><button id="back-btn">← Quay lại</button><div id="toolbar-title"></div></div>' +
-        '<iframe id="web-frame" referrerpolicy="no-referrer-when-downgrade" allow="*"></iframe>' +
-        '</div>' +
-        '<script>' +
+        '.tile:active{transform:scale(0.95);background:rgba(255,255,255,0.1);}.tile .icon{width:56px;height:56px;border-radius:14px;background:linear-gradient(135deg,#a855f7,#ec4899);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:900;color:#fff;margin-bottom:10px;}' +
+        '.tile.app .icon{background:linear-gradient(135deg,#22c55e,#16a34a);}.tile .name{font-size:12px;font-weight:700;color:#fff;word-break:break-word;line-height:1.3;}' +
+        '.badge{position:absolute;top:6px;right:6px;background:#22c55e;color:#fff;font-size:8px;padding:2px 5px;border-radius:6px;font-weight:800;}</style></head><body>' +
+        '<h1>'+title+'</h1><div class="grid" id="grid"></div><script>' +
         'var items = '+itemsJson+';\n' +
-        'function navDirect(url){var a=document.createElement("a");a.href=url;a.target="_blank";document.body.appendChild(a);a.click();setTimeout(function(){a.remove();},100);}\n' +
+        'function nav(url, tab){var a=document.createElement("a");a.href=url;a.target=tab?"_blank":"_self";document.body.appendChild(a);a.click();setTimeout(function(){a.remove();},100);}\n' +
         'items.forEach(function(w){var t=document.createElement("div");t.className="tile "+(w.type==="app"?"app":"");' +
         't.innerHTML=\'<div class="icon">\'+w.name.charAt(0).toUpperCase()+\'</div><div class="name">\'+w.name+\'</div>\'+(w.type==="app"?\'<div class="badge">APP</div>\':\'\');' +
-        't.onclick=function(){' +
-        '  if(w.type==="app"){ navDirect(w.url); return; }' +
-        '  document.getElementById("web-frame").src = w.url;' +
-        '  document.getElementById("toolbar-title").textContent = w.name;' +
-        '  document.body.classList.add("viewing");' +
-        '};document.getElementById("grid").appendChild(t);});' +
-        'document.getElementById("back-btn").onclick=function(){' +
-        '  document.body.classList.remove("viewing");' +
-        '  setTimeout(function(){ document.getElementById("web-frame").src="about:blank"; }, 300);' +
-        '};' +
+        't.onclick=function(){nav(w.url, w.type==="app");};document.getElementById("grid").appendChild(t);});' +
         '<\/script></body></html>';
     }
 
-    // --- Tạo Payload WebClip (Có Mô tả riêng) ---
-    function buildPayload(name, url, base64, baseId, index, desc) {
-        var uuid = generateUUID();
+    // --- Tạo Payload WebClip (Đã fix UUID riêng biệt) ---
+    function buildPayload(name, desc, url, base64, baseId, index) {
+        var uuid = generateUUID(); // Tạo UUID ngẫu nhiên cho từng icon
         var iconXml = base64 ? '            <key>Icon</key>\n            <data>'+base64+'</data>\n' : '';
+        
         return [
             '        <dict>',
             '            <key>FullScreen</key>',
@@ -313,17 +261,17 @@ Hướng dẫn sử dụng:
             '            <key>Precomposed</key>',
             '            <true/>',
             '            <key>PayloadDescription</key>',
-            '            <string>' + esc(desc) + '</string>', // Mô tả chi tiết
+            '            <string>' + esc(desc) + '</string>',
             '            <key>PayloadDisplayName</key>',
             '            <string>' + esc(name) + '</string>',
             '            <key>PayloadIdentifier</key>',
-            '            <string>' + esc(baseId) + '.webclip.' + index + '.' + uuid + '</string>',
+            '            <string>' + esc(baseId) + '.webclip.' + index + '.' + uuid + '</string>', // ID riêng
             '            <key>PayloadOrganization</key>',
             '            <string>MDUY</string>',
             '            <key>PayloadType</key>',
             '            <string>com.apple.webClip.managed</string>',
             '            <key>PayloadUUID</key>',
-            '            <string>' + uuid + '</string>',
+            '            <string>' + uuid + '</string>', // UUID riêng
             '            <key>PayloadVersion</key>',
             '            <integer>1</integer>',
             '            <key>URL</key>',
@@ -350,39 +298,37 @@ Hướng dẫn sử dụng:
         }
 
         var appName = $('app-name').value.trim() || 'MDUY';
+        var appDesc = $('app-desc').value; // Không trim, cho phép mô tả dài, nhiều dòng
         var gridTitle = $('grid-title').value.trim() || 'Chọn để mở';
         var hideUrl = $('opt-hide-url').checked;
-        var userScript = $('userscript-code').value.trim();
-        
-        // Lấy mô tả
-        var profileDesc = $('profile-desc').value.trim() || 'WebClip tạo bởi MDUY';
 
+        // Tạo HTML Lưới
         var launcherHtml = buildLauncherHtml(items, gridTitle);
         var base64Html = btoa(unescape(encodeURIComponent(launcherHtml)));
         var finalUrl = 'data:text/html;charset=utf-8;base64,' + base64Html;
 
-        if (!hideUrl && items.length === 1) finalUrl = items[0].url;
+        if (!hideUrl && items.length === 1) {
+            finalUrl = items[0].url;
+        }
 
+        // Mã gốc cho Profile này (để phân biệt Profile mới với Profile cũ)
         var masterId = 'com.mduy.webclip.' + generateUUID().substring(0, 8);
+
+        // Tạo Payload (Mỗi icon 1 UUID)
         var payloads = [];
-        
         for (var i = 0; i < currentCount; i++) {
             var displayName = currentCount > 1 ? (appName + ' ' + (i + 1)) : appName;
-            payloads.push(buildPayload(displayName, finalUrl, iconBase64, masterId, i, profileDesc));
+            payloads.push(buildPayload(displayName, appDesc, finalUrl, iconBase64, masterId, i));
         }
 
         var config = '<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n<plist version="1.0">\n<dict>\n    <key>PayloadContent</key>\n    <array>\n' +
-        payloads.join('\n') + '\n    </array>\n    <key>PayloadDescription</key>\n    <string>' + esc(profileDesc) + '</string>\n    <key>PayloadDisplayName</key>\n    <string>' + esc(appName) + '</string>\n    <key>PayloadIdentifier</key>\n    <string>' + masterId + '</string>\n    <key>PayloadOrganization</key>\n    <string>MDUY</string>\n    <key>PayloadType</key>\n    <string>Configuration</string>\n    <key>PayloadUUID</key>\n    <string>' + generateUUID() + '</string>\n    <key>PayloadVersion</key>\n    <integer>1</integer>\n</dict>\n</plist>';
+            payloads.join('\n') + '\n    </array>\n    <key>PayloadDescription</key>\n    <string>' + esc(appDesc) + '</string>\n    <key>PayloadDisplayName</key>\n    <string>' + esc(appName) + '</string>\n    <key>PayloadIdentifier</key>\n    <string>' + masterId + '</string>\n    <key>PayloadOrganization</key>\n    <string>MDUY</string>\n    <key>PayloadType</key>\n    <string>Configuration</string>\n    <key>PayloadUUID</key>\n    <string>' + generateUUID() + '</string>\n    <key>PayloadVersion</key>\n    <integer>1</integer>\n</dict>\n</plist>';
 
         if (configBlobUrl) URL.revokeObjectURL(configBlobUrl);
         configBlobUrl = URL.createObjectURL(new Blob([config], { type: 'application/x-apple-aspen-config' }));
         configFile = { name: 'WebClip.mobileconfig', blobUrl: configBlobUrl };
 
-        if (userScriptBlobUrl) URL.revokeObjectURL(userScriptBlobUrl);
-        if (userScript) userScriptBlobUrl = URL.createObjectURL(new Blob([userScript], { type: 'text/javascript' }));
-
         $('download-row').style.display = 'grid';
-        $('userscript-btn').style.display = userScript ? 'flex' : 'none';
         $('status').textContent = 'Tạo thành công!';
         $('status').className = 'status';
         btn.disabled = false;
@@ -391,13 +337,12 @@ Hướng dẫn sử dụng:
     // --- Tải / Cài ---
     $('install-btn').onclick = function() { if (configFile) window.location.href = configFile.blobUrl; };
     $('save-btn').onclick = function() { if (configFile) download(configFile.blobUrl, configFile.name); };
-    $('userscript-btn').onclick = function() { if (userScriptBlobUrl) download(userScriptBlobUrl, 'script.user.js'); };
 
     function download(url, name) {
         var a = document.createElement('a'); a.href = url; a.download = name;
         document.body.appendChild(a); a.click(); document.body.removeChild(a);
     }
-    function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/\n/g, '&#10;'); }
+    function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 })();
 </script>
 </body>
